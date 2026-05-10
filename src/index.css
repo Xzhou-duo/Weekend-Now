@@ -1,0 +1,21 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/**
+ * 全局基线 · 对齐 docs/design-system.md
+ * Tailwind 主题见 tailwind.config.js；如需在运行时读取同色值，可看 src/tokens/design-tokens.ts
+ */
+@layer base {
+  html {
+    @apply antialiased text-text-primary font-sans;
+  }
+
+  body {
+    @apply m-0 min-h-svh bg-surface-bg text-text-primary;
+  }
+
+  #root {
+    @apply min-h-svh;
+  }
+}
