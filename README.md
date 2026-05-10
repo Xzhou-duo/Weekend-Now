@@ -51,9 +51,48 @@ npm run build
 
 仅跑前端、不启 API 时：**仍会完整可用**，推荐语走本地规则。
 
-构建产物 `npm run build` 为纯静态站，**不包含**该 Node 服务；上线需将同类接口部署到自建后端/Serverless。
+构建产物 `npm run build` 为静态前端；**推荐 API** 需单独托管（见下文 Railway）。
 
 开发环境会在控制台输出 `mvp_*` 埋点事件；亦派发 `window` 事件 `mvp-analytics`。
+
+---
+
+## 部署：Vercel（前端）+ Railway（API）
+
+### 1. Railway — `POST /api/recommend`
+
+1. [Railway](https://railway.app) 新建项目 → **Deploy from GitHub**（或 CLI），选中本仓库。
+2. **Root Directory** 设为 **`web`**（重要）。
+3. **Variables**（示例）：
+
+   | 变量 | 说明 |
+   |------|------|
+   | `MIMO_API_KEY` | 必填 |
+   | `ALLOWED_ORIGINS` | **必填（生产）**：Vercel 站点完整 URL，逗号分隔多个，如 `https://paipa.vercel.app` |
+   | `MIMO_BASE_URL` | 与小米控制台一致（默认见 `.env.example`） |
+   | `MIMO_MODEL` | 可选 |
+
+   **勿**在 Railway 配置 `PORT`，由平台注入。
+
+4. **Settings → Networking → Generate Domain**，记下公网地址，例如 `https://paipa-api-production-xxxx.up.railway.app`。
+5. 自检：浏览器打开 `https://…/health` 应返回 JSON `{ ok: true }`。
+
+### 2. Vercel — 静态前端
+
+1. [Vercel](https://vercel.com) Import 仓库，**Root Directory** 选 **`web`**。
+2. Build：**默认** `npm run build`，Output **`dist`**（Vite 预设）。
+3. **Environment Variables（Production）**：
+
+   - `VITE_API_BASE_URL` = Railway 公网根 URL，**无尾斜杠**，例如 `https://paipa-api-production-xxxx.up.railway.app`
+
+4. Deploy。此后前端会向 `${VITE_API_BASE_URL}/api/recommend` 发请求；本地开发不设该变量时仍走 Vite 代理的 `/api/recommend`。
+
+### 3. 顺序与 CORS
+
+先拿到 **Railway URL**，再填 **Vercel 的 `VITE_API_BASE_URL`** 并 redeploy。  
+`ALLOWED_ORIGINS` 必须包含最终用户访问的 **Vercel 域名**（含 `https://`），否则会触发浏览器的跨域拦截。
+
+仓库内 **`web/vercel.json`** 仅含 SPA fallback rewrite；**`web/railway.toml`** 指定 `npm run start`（即 `node ./server/recommend-api.mjs`）。
 
 ---
 

@@ -12,7 +12,16 @@ function envTrim(name, fallback = '') {
   return String(v).trim()
 }
 
-const PORT = Number(envTrim('MIMO_API_SERVER_PORT', '8788')) || 8788
+/** Railway / Fly 等会注入 PORT；本地仍可用 MIMO_API_SERVER_PORT */
+const PORT =
+  Number(process.env.PORT) ||
+  Number(envTrim('MIMO_API_SERVER_PORT', '8788')) ||
+  8788
+/** 有 PORT（常见于云平台）时默认监听全网卡；本地仅 8788 时默认本机 */
+const LISTEN_HOST =
+  envTrim('LISTEN_HOST') ||
+  (envTrim('PORT') ? '0.0.0.0' : '127.0.0.1')
+
 const MIMO_API_KEY = envTrim('MIMO_API_KEY')
 const MIMO_MODEL = envTrim('MIMO_MODEL', 'mimo-v2.5-pro')
 const MIMO_BASE_RAW = envTrim(
@@ -269,9 +278,11 @@ async function callMiMoOnce(userContent, { temperature }) {
       }
 
       const content = extractFromCompletionJson(data)
-      console.log('\n===== MiMo RAW CONTENT =====\n')
-      console.log(content)
-      console.log('\n============================\n')
+      if (envTrim('NODE_ENV') !== 'production') {
+        console.log('\n===== MiMo RAW CONTENT =====\n')
+        console.log(content)
+        console.log('\n============================\n')
+      }
       if (!content) {
         lastErr = new Error(
           `MIMO_EMPTY_CONTENT snippet=${text.slice(0, 220)}`,
@@ -299,9 +310,39 @@ async function callMiMo(userContent) {
   }
 }
 
-function json(res, status, obj) {
+/** 逗号分隔；留空则 `*`（仅适合本地）。生产请填 Vercel 域名，如 https://xxx.vercel.app */
+function corsAllowOrigin(req) {
+  const origin = req.headers.origin
+  const raw = envTrim('ALLOWED_ORIGINS')
+  if (!raw) return '*'
+  const allowed = raw.split(',').map((s) => s.trim()).filter(Boolean)
+  if (origin && allowed.includes(origin)) return origin
+  if (!origin && allowed.length === 1) return allowed[0]
+  return null
+}
+
+function corsHeaders(req) {
+  const ao = corsAllowOrigin(req)
+  if (!ao) {
+    return {
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+      Vary: 'Origin',
+    }
+  }
+  return {
+    'Access-Control-Allow-Origin': ao,
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    Vary: 'Origin',
+  }
+}
+
+function json(res, status, obj, req) {
   const payload = Buffer.from(JSON.stringify(obj), 'utf8')
+  const base = req ? corsHeaders(req) : {}
   res.writeHead(status, {
+    ...base,
     'Content-Type': 'application/json; charset=utf-8',
     'Content-Length': payload.length,
   })
@@ -309,19 +350,37 @@ function json(res, status, obj) {
 }
 
 const server = http.createServer(async (req, res) => {
-  if (req.method === 'OPTIONS' && req.url?.startsWith('/api/recommend')) {
-    res.writeHead(204, {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
-    })
+  const urlPath = req.url?.split('?')[0] ?? ''
+
+  if (req.method === 'OPTIONS' && urlPath === '/api/recommend') {
+    if (!corsAllowOrigin(req) && envTrim('ALLOWED_ORIGINS')) {
+      res.writeHead(403, corsHeaders(req))
+      res.end()
+      return
+    }
+    res.writeHead(204, corsHeaders(req))
     res.end()
     return
   }
 
-  if (req.method !== 'POST' || req.url !== '/api/recommend') {
-    res.writeHead(404)
+  if (req.method === 'GET' && urlPath === '/health') {
+    json(
+      res,
+      200,
+      { ok: true, service: 'paipa-api', ts: Date.now() },
+      req,
+    )
+    return
+  }
+
+  if (req.method !== 'POST' || urlPath !== '/api/recommend') {
+    res.writeHead(404, req ? corsHeaders(req) : {})
     res.end()
+    return
+  }
+
+  if (!corsAllowOrigin(req) && envTrim('ALLOWED_ORIGINS')) {
+    json(res, 403, { ok: false, error: 'CORS_ORIGIN_NOT_ALLOWED' }, req)
     return
   }
 
@@ -331,13 +390,13 @@ const server = http.createServer(async (req, res) => {
   try {
     parsedBody = JSON.parse(body || '{}')
   } catch {
-    json(res, 400, { ok: false, error: 'INVALID_JSON' })
+    json(res, 400, { ok: false, error: 'INVALID_JSON' }, req)
     return
   }
 
   const built = buildUserPayload(parsedBody)
   if ('error' in built) {
-    json(res, built.status ?? 400, { ok: false, error: built.error })
+    json(res, built.status ?? 400, { ok: false, error: built.error }, req)
     return
   }
 
@@ -349,7 +408,7 @@ const server = http.createServer(async (req, res) => {
   }
 
   if (!MIMO_API_KEY) {
-    json(res, 200, { ok: false, error: 'MISSING_API_KEY' })
+    json(res, 200, { ok: false, error: 'MISSING_API_KEY' }, req)
     return
   }
 
@@ -363,25 +422,38 @@ const server = http.createServer(async (req, res) => {
       items = sanitizeItems(rawItems, venuesById)
     }
     if (!items) {
-      json(res, 200, {
-        ok: false,
-        error: 'MALFORMED_MODEL_OUTPUT',
-      })
+      json(
+        res,
+        200,
+        {
+          ok: false,
+          error: 'MALFORMED_MODEL_OUTPUT',
+        },
+        req,
+      )
       return
     }
-    json(res, 200, { ok: true, items })
+    json(res, 200, { ok: true, items }, req)
   } catch (e) {
-    json(res, 200, {
-      ok: false,
-      error: 'MIMO_FAILED',
-      message: String((e)?.message ?? e),
-    })
+    json(
+      res,
+      200,
+      {
+        ok: false,
+        error: 'MIMO_FAILED',
+        message: String((e)?.message ?? e),
+      },
+      req,
+    )
   }
 })
 
-server.listen(PORT, '127.0.0.1', () => {
+server.listen(PORT, LISTEN_HOST, () => {
   console.info(
-    `[recommend-api] http://127.0.0.1:${PORT}/api/recommend (MiMo ${MIMO_API_KEY ? 'key=***' : 'NO_KEY — 前端将走本地规则'})`,
+    `[recommend-api] listening http://${LISTEN_HOST}:${PORT} | POST /api/recommend | MiMo ${MIMO_API_KEY ? 'key=***' : 'NO_KEY（前端将走本地规则）'}`,
   )
   console.info(`[recommend-api] 上游 ${MIMO_BASE_RAW} model=${MIMO_MODEL}`)
+  if (envTrim('ALLOWED_ORIGINS')) {
+    console.info(`[recommend-api] CORS ALLOWED_ORIGINS=${envTrim('ALLOWED_ORIGINS')}`)
+  }
 })

@@ -1,0 +1,8 @@
+# Railway：Root Directory 选 web（或仓库根若仅此服务）
+# Dashboard → Variables：MIMO_API_KEY、ALLOWED_ORIGINS、MIMO_BASE_URL 等
+
+[build]
+builder = "nixpacks"
+
+[deploy]
+startCommand = "npm run start"

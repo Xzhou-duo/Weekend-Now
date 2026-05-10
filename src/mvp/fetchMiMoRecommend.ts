@@ -43,13 +43,18 @@ function mergeToRecommendations(
  * POST /api/recommend（开发时由 Vite 代理到本地 Node 示例服务）
  * 成功且恰好 3 条则返回；否则返回 null，由前端调用 recommendTop3 兜底。
  */
+function recommendUrl(): string {
+  const base = (import.meta.env.VITE_API_BASE_URL ?? '').replace(/\/$/, '')
+  return base ? `${base}/api/recommend` : '/api/recommend'
+}
+
 export async function fetchMiMoRecommendations(params: {
   swipeRecords: { tags: TasteTag[]; action: SwipeAction }[]
   quiz: Required<QuizAnswers>
   venues: Venue[]
   signal?: AbortSignal
 }): Promise<Recommendation[] | null> {
-  const res = await fetch('/api/recommend', {
+  const res = await fetch(recommendUrl(), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     signal: params.signal,

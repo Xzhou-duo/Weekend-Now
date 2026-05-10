@@ -8,6 +8,7 @@
     "dev:api": "node --env-file=.env ./server/recommend-api.mjs",
     "dev:all": "concurrently \"npm run dev:api\" \"npm run dev\"",
     "build": "tsc -b && vite build",
+    "start": "node ./server/recommend-api.mjs",
     "lint": "eslint .",
     "preview": "vite preview"
   },
