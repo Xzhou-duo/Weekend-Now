@@ -448,7 +448,7 @@ const server = http.createServer(async (req, res) => {
   }
 })
 
-server.listen(PORT, LISTEN_HOST, () => {
+server.listen(PORT, () => {
   console.info(
     `[recommend-api] listening http://${LISTEN_HOST}:${PORT} | POST /api/recommend | MiMo ${MIMO_API_KEY ? 'key=***' : 'NO_KEY（前端将走本地规则）'}`,
   )
