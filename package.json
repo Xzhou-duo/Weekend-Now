@@ -3,6 +3,11 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+
+  "engines": {
+    "node": "20.x"
+  },
+
   "scripts": {
     "dev": "vite",
     "dev:api": "node --env-file=.env ./server/recommend-api.mjs",
@@ -12,11 +17,13 @@
     "lint": "eslint .",
     "preview": "vite preview"
   },
+
   "dependencies": {
     "@tabler/icons-react": "^3.44.0",
     "react": "^19.2.5",
     "react-dom": "^19.2.5"
   },
+
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@types/node": "^24.12.2",
