@@ -14,7 +14,7 @@ function envTrim(name, fallback = '') {
 
 /** Railway / Fly 等会注入 PORT；本地仍可用 MIMO_API_SERVER_PORT */
 const PORT =
-  Number(process.env.PORT) ||
+  Number(envTrim('PORT')) ||
   Number(envTrim('MIMO_API_SERVER_PORT', '8788')) ||
   8788
 /** 有 PORT（常见于云平台）时默认监听全网卡；本地仅 8788 时默认本机 */
@@ -448,7 +448,7 @@ const server = http.createServer(async (req, res) => {
   }
 })
 
-server.listen(PORT, () => {
+server.listen(PORT, LISTEN_HOST, () => {
   console.info(
     `[recommend-api] listening http://${LISTEN_HOST}:${PORT} | POST /api/recommend | MiMo ${MIMO_API_KEY ? 'key=***' : 'NO_KEY（前端将走本地规则）'}`,
   )

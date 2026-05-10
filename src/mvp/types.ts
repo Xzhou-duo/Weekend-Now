@@ -1,4 +1,10 @@
-export type Step = 'swipe' | 'quiz' | 'results' | 'feedback' | 'done'
+export type Step =
+  | 'swipe'
+  | 'quiz'
+  | 'results'
+  | 'feedback'
+  | 'survey'
+  | 'done'
 
 export type SwipeAction = 'dislike' | 'like' | 'bookmark'
 

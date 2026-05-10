@@ -7,6 +7,7 @@ import type {
   TasteTag,
 } from './types'
 import { FeedbackStep } from './components/FeedbackStep'
+import { SurveyPromptStep } from './components/SurveyPromptStep'
 import { QuizStep } from './components/QuizStep'
 import { ResultsStep } from './components/ResultsStep'
 import { SwipeStep } from './components/SwipeStep'
@@ -164,9 +165,13 @@ export function MvpApp() {
         {step === 'feedback' && (
           <FeedbackStep
             onSubmit={() => {
-              setStep('done')
+              setStep('survey')
             }}
           />
+        )}
+
+        {step === 'survey' && (
+          <SurveyPromptStep onFinish={() => setStep('done')} />
         )}
 
         {step === 'done' && (
@@ -176,11 +181,11 @@ export function MvpApp() {
                 谢谢反馈
               </span>
               <p className="mt-3 text-caption leading-[1.6] text-text-secondary">
-                本轮验证数据已记在浏览器控制台事件
+                若你已填写腾讯问卷，非常感谢。产品内埋点见控制台事件
                 <code className="mx-1 rounded-badge bg-brand-purple-light px-1 text-brand-purple-deep">
                   mvp-analytics
                 </code>
-                ，可随时「重新开始」再跑一遍流程。
+                ；可随时「重新开始」再跑一遍。
               </p>
               <button
                 type="button"

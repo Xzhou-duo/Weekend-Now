@@ -6,6 +6,9 @@ export type MvpEvent =
   | 'mvp_results_view'
   | 'mvp_result_expand'
   | 'mvp_feedback_submit'
+  /** 问卷引导页曝光 / 用户点击打开腾讯问卷 */
+  | 'mvp_survey_prompt_view'
+  | 'mvp_survey_open_click'
   /** MiMo API 优先，本地 recommendTop3 兜底 */
   | 'mvp_recommend_source'
 
