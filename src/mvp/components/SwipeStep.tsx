@@ -24,26 +24,30 @@ const iconToneFg: Record<SwipeCardModel['iconTone'], string> = {
 function SwipeCardFrame({
   model,
   style,
+  className = '',
 }: {
   model: SwipeCardModel
   style?: CSSProperties
+  className?: string
 }) {
   return (
     <div
-      className="flex h-full flex-col overflow-hidden rounded-card-main border border-border-card bg-surface-card shadow-card"
+      className={`flex h-full flex-col overflow-hidden rounded-[18px] border border-border-card bg-surface-card shadow-card ${className}`}
       style={style}
     >
       <div
-        className={`relative flex h-[110px] shrink-0 items-center justify-center ${iconToneBg[model.iconTone]}`}
+        className={`relative flex h-[108px] shrink-0 items-center justify-center ${iconToneBg[model.iconTone]}`}
       >
         <PlaceIcon name={model.iconName} className={iconToneFg[model.iconTone]} />
-        <span className="absolute left-[10px] top-[10px] rounded-badge bg-white px-2 py-1 text-hint font-medium text-teal-deep">
+        <span className="absolute left-[10px] top-[10px] rounded-badge bg-white px-2 py-1 text-hint font-semibold text-teal-deep">
           口味测试
         </span>
       </div>
       <div className="flex flex-1 flex-col gap-[6px] p-[10px_12px] pb-3">
-        <h3 className="text-title-card text-text-primary">{model.title}</h3>
-        <p className="text-caption leading-[1.4] text-text-secondary">
+        <h3 className="text-title-card font-semibold text-text-primary">
+          {model.title}
+        </h3>
+        <p className="text-caption leading-[1.45] text-text-secondary">
           {model.description}
         </p>
         <div className="mt-1 flex flex-wrap gap-[6px]">
@@ -58,6 +62,38 @@ function SwipeCardFrame({
   )
 }
 
+function SwipeActionCol({
+  label,
+  onClick,
+  ariaLabel,
+  children,
+  size = 'md',
+}: {
+  label: string
+  onClick: () => void
+  ariaLabel: string
+  children: React.ReactNode
+  size?: 'md' | 'lg'
+}) {
+  return (
+    <div className="flex flex-col items-center gap-1">
+      <button
+        type="button"
+        aria-label={ariaLabel}
+        onClick={onClick}
+        className={
+          size === 'lg'
+            ? 'flex h-14 w-14 items-center justify-center rounded-full bg-brand-purple text-brand-purple-light shadow-[0_6px_16px_rgba(127,119,221,0.45)]'
+            : 'flex h-11 w-11 items-center justify-center rounded-full'
+        }
+      >
+        {children}
+      </button>
+      <span className="text-[8px] text-text-secondary">{label}</span>
+    </div>
+  )
+}
+
 export function SwipeStep({
   onComplete,
   priorSwipeCount = 0,
@@ -65,7 +101,6 @@ export function SwipeStep({
   onSkipToQuiz,
 }: {
   onComplete: (records: { tags: TasteTag[]; action: SwipeAction }[]) => void
-  /** 历史累计滑卡次数（用于文案） */
   priorSwipeCount?: number
   canSkipUsingProfile?: boolean
   onSkipToQuiz?: () => void
@@ -81,6 +116,7 @@ export function SwipeStep({
   const drag = useRef({ active: false, startX: 0, startY: 0 })
 
   const current = SWIPE_DECK[index]
+  const nextCard = SWIPE_DECK[index + 1]
   const lifetimeDone = priorSwipeCount >= COLD_START_TARGET
 
   const finalize = useCallback(
@@ -129,83 +165,97 @@ export function SwipeStep({
   if (!current) return null
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-[10px]">
-      <div>
+    <div className="flex min-h-0 flex-1 flex-col">
+      <div className="shrink-0 border-b border-border-card bg-surface-card pb-2.5 pt-1">
         <p className="text-caption text-text-secondary">嗨，先认识一下你的口味</p>
-        <h2 className="mt-1 text-title-page text-text-primary">
+        <h2 className="mt-1 text-title-page font-semibold leading-[1.35] text-text-primary">
           <span className="border-b-2 border-brand-purple text-brand-purple">
             喜欢
           </span>
           右滑 · 不喜左滑 · 收藏上滑
         </h2>
-        <p className="mt-2 text-hint leading-[1.45] text-text-tertiary">
+        <p className="mt-1.5 text-hint leading-[1.4] text-text-tertiary">
           {lifetimeDone
             ? '口味档案已建立，本轮滑卡会微调推荐。'
             : `滑满 ${COLD_START_TARGET} 张后推荐更准（环境 · 价格 · 类型 · 社交）。`}
         </p>
-        <div className="mt-3">
-          <MvpProgressBar current={records.length} total={total} />
-          {!lifetimeDone && priorSwipeCount > 0 ? (
-            <p className="mt-1.5 text-hint text-text-tertiary">
-              历史已累计 {priorSwipeCount} 次滑卡信号
-            </p>
-          ) : null}
-        </div>
+      </div>
+
+      <div className="shrink-0 bg-surface-card px-0 pb-2.5 pt-2">
+        <MvpProgressBar current={records.length} total={total} />
+        {!lifetimeDone && priorSwipeCount > 0 ? (
+          <p className="mt-1.5 text-hint text-text-tertiary">
+            历史已累计 {priorSwipeCount} 次滑卡信号
+          </p>
+        ) : null}
         {canSkipUsingProfile && onSkipToQuiz ? (
           <button
             type="button"
             onClick={onSkipToQuiz}
-            className="mt-3 w-full rounded-block border border-brand-purple bg-brand-purple-light py-2.5 text-caption font-medium text-brand-purple-deep"
+            className="mt-2.5 w-full rounded-block border border-brand-purple bg-brand-purple-light py-2.5 text-caption font-medium text-brand-purple-deep"
           >
             跳过 · 使用已有口味档案
           </button>
         ) : null}
       </div>
 
-      <div className="relative min-h-[280px] flex-1 pb-2">
+      <div className="relative min-h-[220px] flex-1 px-0 py-2">
+        {nextCard ? (
+          <div
+            className="pointer-events-none absolute inset-x-1.5 top-2 bottom-0 scale-[0.96] rounded-[18px] border border-border-card bg-surface-card opacity-55"
+            aria-hidden
+          />
+        ) : null}
         <div
-          className="touch-none select-none"
+          className="relative mx-0 h-full min-h-[200px] touch-none select-none"
           onPointerDown={onPointerDown}
           onPointerMove={onPointerMove}
           onPointerUp={onPointerUp}
           onPointerCancel={onPointerUp}
         >
           <div
-            className="origin-bottom will-change-transform"
+            className="absolute inset-0 origin-bottom will-change-transform"
             style={{
               transform: `translate(${dx}px, ${dy}px) rotate(${dx * 0.04}deg)`,
             }}
           >
-            <SwipeCardFrame model={current} />
+            <SwipeCardFrame model={current} className="h-full" />
           </div>
         </div>
       </div>
 
-      <div className="flex items-center justify-center gap-[14px] bg-surface-bg py-3">
-        <button
-          type="button"
-          aria-label="不喜欢"
-          onClick={() => finalize('dislike')}
-          className="flex h-[46px] w-[46px] items-center justify-center rounded-full bg-danger-light text-danger"
-        >
-          <IconX size={20} stroke={2} />
-        </button>
-        <button
-          type="button"
-          aria-label="喜欢"
-          onClick={() => finalize('like')}
-          className="flex h-14 w-14 items-center justify-center rounded-full bg-brand-purple text-brand-purple-light"
-        >
-          <IconHeartFilled size={24} />
-        </button>
-        <button
-          type="button"
-          aria-label="收藏"
-          onClick={() => finalize('bookmark')}
-          className="flex h-[46px] w-[46px] items-center justify-center rounded-full bg-amber-light text-amber-collect"
-        >
-          <IconBookmark size={20} stroke={2} />
-        </button>
+      <div className="-mx-page-h shrink-0 border-t border-border-card bg-surface-card px-page-h pb-4 pt-2.5">
+        <p className="mb-2.5 text-center text-hint text-text-tertiary">
+          也可点下方按钮操作
+        </p>
+        <div className="flex items-end justify-center gap-5">
+          <SwipeActionCol
+            label="不喜欢"
+            ariaLabel="不喜欢"
+            onClick={() => finalize('dislike')}
+          >
+            <span className="flex h-11 w-11 items-center justify-center rounded-full bg-danger-light text-danger">
+              <IconX size={18} stroke={2} />
+            </span>
+          </SwipeActionCol>
+          <SwipeActionCol
+            label="喜欢"
+            ariaLabel="喜欢"
+            size="lg"
+            onClick={() => finalize('like')}
+          >
+            <IconHeartFilled size={22} />
+          </SwipeActionCol>
+          <SwipeActionCol
+            label="收藏"
+            ariaLabel="收藏"
+            onClick={() => finalize('bookmark')}
+          >
+            <span className="flex h-11 w-11 items-center justify-center rounded-full bg-amber-light text-amber-collect">
+              <IconBookmark size={18} stroke={2} />
+            </span>
+          </SwipeActionCol>
+        </div>
       </div>
     </div>
   )
