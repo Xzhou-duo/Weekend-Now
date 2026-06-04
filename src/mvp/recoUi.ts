@@ -1,5 +1,24 @@
 import type { QuizAnswers, Venue } from './types'
 
+/** 原型 P3 副标题：基于你今天… · 独自出行 */
+export function resultsListSubtitle(quiz: Required<QuizAnswers>): string {
+  const mood =
+    quiz.mood === 'relax'
+      ? '想放松'
+      : quiz.mood === 'fresh'
+        ? '想要新鲜感'
+        : quiz.mood === 'food'
+          ? '想吃好的'
+          : '随便看看'
+  const party =
+    quiz.party === 'solo'
+      ? '独自出行'
+      : quiz.party === 'pair'
+        ? '两人出行'
+        : '多人出行'
+  return `基于你今天${mood} · ${party}`
+}
+
 export function quizSubtitleLine(quiz: Required<QuizAnswers>): string {
   const party =
     quiz.party === 'solo'

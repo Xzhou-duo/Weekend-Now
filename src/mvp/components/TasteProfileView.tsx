@@ -1,93 +1,87 @@
-import { IconUser } from '@tabler/icons-react'
+import { IconRefresh, IconUser } from '@tabler/icons-react'
 import type { PersistedMvpStateV1 } from '../persist'
 import { isColdStartComplete, COLD_START_TARGET } from '../coldStart'
+import { purpleHeader } from '../figmaUi'
 import { PROFILE_AXES, axisStrength, tagLabel } from '../profileUi'
 import type { TasteTag } from '../types'
+import { AiNoteBox } from './AiNoteBox'
+
+const GRID_AXES = [
+  { id: 'env', dim: '环境偏好', bar: 'bg-brand-purple' },
+  { id: 'price', dim: '价格敏感度', bar: 'bg-teal' },
+  { id: 'social', dim: '社交模式', bar: 'bg-brand-purple' },
+  { id: 'radius', dim: '出行半径', bar: 'bg-amber' },
+] as const
 
 export function TasteProfileView({ state }: { state: PersistedMvpStateV1 }) {
   const vec = state.preferenceVector
-  const topAll = (Object.entries(vec) as [TasteTag, number][])
-    .filter(([, v]) => v > 0.2)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 6)
+  const unlockedTags = (Object.entries(vec) as [TasteTag, number][]).filter(
+    ([, v]) => v > 0.25,
+  ).length
 
   const coldDone = isColdStartComplete(state.coldStartSwipeCount)
-  const feedbackCount = state.venueFeedbackHistory.length
+  const learning = !coldDone || state.venueFeedbackHistory.length < 3
+
+  const topInsight = (Object.entries(vec) as [TasteTag, number][])
+    .filter(([, v]) => v > 0.35)
+    .sort((a, b) => b[1] - a[1])[0]
+
+  const noteText = topInsight
+    ? coldDone
+      ? '疲惫状态下你更倾向安静场所，周五晚上不推嘈杂环境'
+      : `再滑 ${Math.max(0, COLD_START_TARGET - state.coldStartSwipeCount)} 张卡，推荐会更准。`
+    : coldDone
+      ? '多完成出行反馈，推荐会更贴你。'
+      : '完成滑卡建档后，这里会出现个性化洞察。'
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-section overflow-y-auto pb-24">
-      <header className="-mx-page-h rounded-b-[20px] bg-brand-purple px-page-h pb-5 pt-4">
-        <div className="flex items-center gap-2">
-          <IconUser size={22} className="text-brand-purple-light" stroke={1.5} />
-          <h2 className="text-title-section text-white">我的口味</h2>
+    <div className="flex min-h-0 flex-1 flex-col gap-element overflow-y-auto bg-surface-bg pb-24">
+      <header className={purpleHeader}>
+        <div className="flex items-center gap-2.5">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-purple-light">
+            <IconUser size={20} className="text-brand-purple-deep" stroke={1.5} />
+          </div>
+          <div className="min-w-0 flex-1">
+            <h2 className="text-[14px] font-medium text-white">
+              已解锁 {unlockedTags} 个口味标签
+            </h2>
+            <p className="mt-0.5 text-caption text-text-on-purple">
+              基于 {state.completedFlows} 次出行 · {state.coldStartSwipeCount}{' '}
+              次滑动
+            </p>
+          </div>
+          {learning ? (
+            <span className="flex shrink-0 items-center gap-1 rounded-badge bg-brand-purple-pale px-2 py-1 text-hint font-medium text-brand-purple-navy">
+              <IconRefresh size={11} aria-hidden />
+              学习中
+            </span>
+          ) : null}
         </div>
-        <p className="mt-2 text-caption text-text-on-purple">
-          来自滑卡、今日状态与出行反馈，存在本机浏览器
-        </p>
       </header>
 
-      <section className="rounded-block border border-border-card bg-surface-card p-card-inner shadow-card">
-        <p className="text-caption text-text-secondary">建档进度</p>
-        <p className="mt-1 text-body font-medium text-text-primary">
-          {coldDone
-            ? '冷启动已完成'
-            : `累计滑卡 ${state.coldStartSwipeCount} / ${COLD_START_TARGET}`}
-        </p>
-        <p className="mt-1 text-hint text-text-tertiary">
-          已完成 {state.completedFlows} 轮推荐 · 出行反馈 {feedbackCount} 条
-        </p>
-      </section>
-
-      <section>
-        <p className="mb-2 text-caption font-medium text-text-secondary">
-          维度倾向
-        </p>
-        <div className="flex flex-col gap-3">
-          {PROFILE_AXES.map((axis) => {
-            const { top, pct } = axisStrength(vec, axis.tags)
-            return (
-              <div
-                key={axis.id}
-                className="rounded-block border border-border-card bg-surface-card px-3 py-3"
-              >
-                <div className="mb-1.5 flex items-center justify-between">
-                  <span className="text-caption font-medium text-text-primary">
-                    {axis.label}
-                  </span>
-                  <span className="text-hint text-text-tertiary">
-                    {top ? tagLabel(top) : '待学习'}
-                  </span>
-                </div>
-                <div className="h-[6px] overflow-hidden rounded-[3px] bg-brand-purple-light">
-                  <div
-                    className="h-full rounded-[3px] bg-brand-purple transition-[width]"
-                    style={{ width: `${pct}%` }}
-                  />
-                </div>
+      <div className="grid grid-cols-2 gap-[7px]">
+        {GRID_AXES.map(({ id, dim, bar }) => {
+          const axis = PROFILE_AXES.find((a) => a.id === id)
+          if (!axis) return null
+          const { top, pct } = axisStrength(vec, axis.tags)
+          return (
+            <div key={id} className="rounded-block bg-surface-card p-[10px]">
+              <p className="text-hint text-text-secondary">{dim}</p>
+              <p className="mt-0.5 text-[11px] font-medium text-text-primary">
+                {top ? tagLabel(top) : '待学习'}
+              </p>
+              <div className="mt-1.5 h-1 overflow-hidden rounded-sm bg-brand-purple-light">
+                <div
+                  className={`h-full rounded-sm ${bar}`}
+                  style={{ width: `${pct}%` }}
+                />
               </div>
-            )
-          })}
-        </div>
-      </section>
+            </div>
+          )
+        })}
+      </div>
 
-      {topAll.length > 0 ? (
-        <section>
-          <p className="mb-2 text-caption font-medium text-text-secondary">
-            高频标签
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {topAll.map(([t, v]) => (
-              <span
-                key={t}
-                className="rounded-badge bg-teal-light px-2 py-1 text-hint font-medium text-teal-deep"
-              >
-                {tagLabel(t)}
-                <span className="ml-1 opacity-70">{v.toFixed(1)}</span>
-              </span>
-            ))}
-          </div>
-        </section>
-      ) : null}
+      <AiNoteBox>{noteText}</AiNoteBox>
     </div>
   )
 }

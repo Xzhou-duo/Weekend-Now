@@ -1,7 +1,16 @@
+import { useMemo, useState } from 'react'
 import type { QuizAnswers, Recommendation } from '../types'
+import {
+  filterChipOff,
+  filterChipOn,
+  matchBadgeExplore,
+  matchBadgeHi,
+  reasonTagPurple,
+  reasonTagTeal,
+} from '../figmaUi'
 import { PlaceIcon } from './PlaceIcon'
 import { trackMvp } from '../analytics'
-import { quizSubtitleLine } from '../recoUi'
+import { resultsListSubtitle, venueMetaLine } from '../recoUi'
 import { RECO_DECK_MAX } from '../recommend'
 
 const toneBg = {
@@ -16,13 +25,33 @@ const toneFg = {
   bazaar: 'text-amber-deep',
 } as const
 
+type ResultFilter = 'all' | 'food' | 'stroll' | 'cafe'
+
+const FILTER_CHIPS: { id: ResultFilter; label: string }[] = [
+  { id: 'all', label: '全部' },
+  { id: 'food', label: '吃饭' },
+  { id: 'stroll', label: '逛逛' },
+  { id: 'cafe', label: '喝咖啡' },
+]
+
+function matchesFilter(item: Recommendation, filter: ResultFilter): boolean {
+  if (filter === 'all') return true
+  const tags = item.venue.tags
+  if (filter === 'food') return tags.includes('food')
+  if (filter === 'cafe') return tags.includes('cafe')
+  return (
+    tags.includes('market') ||
+    tags.includes('neighbor') ||
+    tags.includes('design')
+  )
+}
+
 export function ResultsStep({
   items,
   quiz,
   onNext,
   onEnterRecoSwipe,
   onOpenVenue,
-  recoSource,
 }: {
   items: Recommendation[]
   quiz: Required<QuizAnswers>
@@ -31,90 +60,108 @@ export function ResultsStep({
   onOpenVenue: (venueId: string) => void
   recoSource?: 'mimo' | 'rules'
 }) {
-  const preview = items.slice(0, 3)
-  const exploreCount = items.filter((i) => i.explore).length
+  const [filter, setFilter] = useState<ResultFilter>('all')
+
+  const filtered = useMemo(
+    () => items.filter((row) => matchesFilter(row, filter)),
+    [items, filter],
+  )
+  const preview = filtered.slice(0, 3)
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-element">
-      <div className="rounded-b-none bg-surface-card px-page-h pb-2 pt-section">
-        <h2 className="text-title-section text-text-primary">今日首推</h2>
-        <p className="mt-[6px] text-caption leading-[1.4] text-text-secondary">
-          {quizSubtitleLine(quiz)}
-          {exploreCount > 0
-            ? ` · 含 ${exploreCount} 个探索位`
-            : ''}
-        </p>
-        <p className="mt-1 text-hint text-text-tertiary">
-          {recoSource === 'mimo'
-            ? '首推理由由 MiMo 生成；可刷卡浏览全部推荐并实时调整顺序。'
-            : '本地规则已按「今日状态优先于历史口味」排序；建议刷卡挑一挑。'}
+    <div className="flex min-h-0 flex-1 flex-col bg-surface-bg">
+      <div className="-mx-page-h shrink-0 bg-surface-card px-page-h pb-2 pt-3">
+        <h2 className="text-title-section text-text-primary">
+          为你挑了 {items.length} 个地方
+        </h2>
+        <p className="mt-0.5 text-caption text-text-secondary">
+          {resultsListSubtitle(quiz)}
         </p>
       </div>
 
-      <ul className="flex flex-col gap-element">
-        {preview.map((row) => (
-          <li
-            key={row.venue.id}
-            className="overflow-hidden rounded-card border border-border-card bg-surface-card p-[10px] shadow-card"
-          >
+      <div className="-mx-page-h shrink-0 bg-surface-card px-page-h py-1.5">
+        <div className="flex flex-wrap gap-1.5">
+          {FILTER_CHIPS.map((chip) => (
             <button
+              key={chip.id}
               type="button"
-              className="flex w-full gap-element text-left"
-              onClick={() => {
-                trackMvp('mvp_result_expand', { venueId: row.venue.id })
-                onOpenVenue(row.venue.id)
-              }}
+              onClick={() => setFilter(chip.id)}
+              className={filter === chip.id ? filterChipOn : filterChipOff}
             >
-              <div
-                className={`flex h-[54px] w-[54px] shrink-0 items-center justify-center rounded-icon-block ${toneBg[row.venue.iconTone]}`}
-              >
-                <PlaceIcon
-                  name={row.venue.iconName}
-                  size={28}
-                  className={toneFg[row.venue.iconTone]}
-                />
-              </div>
-              <div className="min-w-0 flex-1">
-                <span
-                  className={`inline-block rounded-[6px] px-[6px] py-px text-hint font-medium ${
-                    row.explore
-                      ? 'bg-amber-light text-amber-deep'
-                      : 'bg-teal-light text-teal-deep'
-                  }`}
-                >
-                  {row.explore
-                    ? '探索'
-                    : `匹配 ${row.scorePercent ?? '—'}%`}
-                </span>
-                <h3 className="mt-1 truncate text-[12px] font-medium text-text-primary">
-                  {row.venue.name}
-                </h3>
-                <p className="mt-1 line-clamp-2 text-hint leading-[1.35] text-text-tertiary">
-                  {row.reason}
-                </p>
-                <span className="mt-2 inline-block text-caption text-brand-purple-deep">
-                  查看详情 →
-                </span>
-              </div>
+              {chip.label}
             </button>
+          ))}
+        </div>
+      </div>
+
+      <ul className="flex min-h-0 flex-1 flex-col gap-element overflow-y-auto py-2">
+        {preview.length === 0 ? (
+          <li className="rounded-card bg-surface-card p-4 text-center text-caption text-text-secondary">
+            该分类暂无结果，试试「全部」
           </li>
-        ))}
+        ) : (
+          preview.map((row) => (
+            <li key={row.venue.id} className="rounded-card bg-surface-card p-[10px]">
+              <button
+                type="button"
+                className="flex w-full items-start gap-[10px] text-left"
+                onClick={() => {
+                  trackMvp('mvp_result_expand', { venueId: row.venue.id })
+                  onOpenVenue(row.venue.id)
+                }}
+              >
+                <div
+                  className={`flex h-[54px] w-[54px] shrink-0 items-center justify-center rounded-icon-block ${toneBg[row.venue.iconTone]}`}
+                >
+                  <PlaceIcon
+                    name={row.venue.iconName}
+                    size={24}
+                    className={toneFg[row.venue.iconTone]}
+                  />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-[12px] font-medium text-text-primary">
+                    {row.venue.name}
+                  </div>
+                  <span
+                    className={
+                      row.explore ? reasonTagPurple : reasonTagTeal
+                    }
+                  >
+                    {row.explore
+                      ? '你说想要新鲜感'
+                      : row.reason.length > 18
+                        ? `${row.reason.slice(0, 18)}…`
+                        : row.reason}
+                  </span>
+                  <div className="text-hint text-text-tertiary">
+                    {venueMetaLine(row.venue, quiz)}
+                  </div>
+                </div>
+                <span
+                  className={row.explore ? matchBadgeExplore : matchBadgeHi}
+                >
+                  {row.explore ? '探索' : `${row.scorePercent ?? '—'}%`}
+                </span>
+              </button>
+            </li>
+          ))
+        )}
       </ul>
 
-      {items.length > 3 ? (
-        <button
-          type="button"
-          onClick={() => {
-            trackMvp('mvp_reco_swipe_enter', { deckSize: items.length })
-            onEnterRecoSwipe()
-          }}
-          className="w-full rounded-block border-2 border-brand-purple bg-brand-purple-light py-3 text-body font-medium text-brand-purple-deep"
-        >
-          刷卡挑一挑（共 {Math.min(items.length, RECO_DECK_MAX)} 个）
-        </button>
-      ) : null}
-
-      <div className="mt-auto pb-4 pt-2">
+      <div className="shrink-0 space-y-2 pb-4 pt-1">
+        {items.length > 3 ? (
+          <button
+            type="button"
+            onClick={() => {
+              trackMvp('mvp_reco_swipe_enter', { deckSize: items.length })
+              onEnterRecoSwipe()
+            }}
+            className="w-full rounded-block border border-brand-purple bg-brand-purple-light py-2.5 text-caption font-medium text-brand-purple-deep"
+          >
+            刷卡挑一挑（共 {Math.min(items.length, RECO_DECK_MAX)} 个）
+          </button>
+        ) : null}
         <button
           type="button"
           onClick={() => onNext()}

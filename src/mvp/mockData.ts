@@ -505,7 +505,7 @@ export const QUIZ_COPY: {
     label: '能接受多远？',
     options: [
       { value: 'walk', label: '步行圈' },
-      { value: 'metro', label: '地铁 1–2 站' },
+      { value: 'metro', label: '地铁1-2站' },
       { value: 'taxi', label: '打车都行' },
     ],
   },

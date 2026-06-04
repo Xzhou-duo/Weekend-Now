@@ -22,6 +22,7 @@ export type MvpEvent =
   | 'mvp_bookmarks_view'
   | 'mvp_profile_view'
   | 'mvp_visit_feedback_submit'
+  | 'mvp_empty_browse_anyway'
   | 'mvp_profile_updated'
   | 'mvp_flow_complete'
 

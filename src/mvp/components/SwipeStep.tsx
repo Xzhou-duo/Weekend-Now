@@ -24,29 +24,31 @@ const iconToneFg: Record<SwipeCardModel['iconTone'], string> = {
 function SwipeCardFrame({
   model,
   style,
+  className = '',
 }: {
   model: SwipeCardModel
   style?: CSSProperties
+  className?: string
 }) {
   return (
     <div
-      className="flex h-full flex-col overflow-hidden rounded-card-main border border-border-card bg-surface-card shadow-card"
+      className={`flex flex-col overflow-hidden rounded-card-main border border-border-card bg-surface-card ${className}`}
       style={style}
     >
       <div
         className={`relative flex h-[110px] shrink-0 items-center justify-center ${iconToneBg[model.iconTone]}`}
       >
-        <PlaceIcon name={model.iconName} className={iconToneFg[model.iconTone]} />
-        <span className="absolute left-[10px] top-[10px] rounded-badge bg-white px-2 py-1 text-hint font-medium text-teal-deep">
+        <PlaceIcon name={model.iconName} size={40} className={iconToneFg[model.iconTone]} />
+        <span className="absolute left-2 top-2 rounded-badge bg-white px-2 py-[3px] text-hint font-medium text-teal-deep">
           口味测试
         </span>
       </div>
-      <div className="flex flex-1 flex-col gap-[6px] p-[10px_12px] pb-3">
-        <h3 className="text-title-card text-text-primary">{model.title}</h3>
-        <p className="text-caption leading-[1.4] text-text-secondary">
+      <div className="flex flex-1 flex-col p-[10px_12px]">
+        <h3 className="text-title-card-sm text-text-primary">{model.title}</h3>
+        <p className="mt-[3px] text-caption leading-[1.4] text-text-secondary">
           {model.description}
         </p>
-        <div className="mt-1 flex flex-wrap gap-[6px]">
+        <div className="mt-1.5 flex flex-wrap gap-1">
           {model.chips.map((c) => (
             <Chip key={c.text} variant={c.variant}>
               {c.text}
@@ -65,7 +67,6 @@ export function SwipeStep({
   onSkipToQuiz,
 }: {
   onComplete: (records: { tags: TasteTag[]; action: SwipeAction }[]) => void
-  /** 历史累计滑卡次数（用于文案） */
   priorSwipeCount?: number
   canSkipUsingProfile?: boolean
   onSkipToQuiz?: () => void
@@ -82,6 +83,7 @@ export function SwipeStep({
 
   const current = SWIPE_DECK[index]
   const lifetimeDone = priorSwipeCount >= COLD_START_TARGET
+  const sessionCurrent = priorSwipeCount + records.length
 
   const finalize = useCallback(
     (action: SwipeAction) => {
@@ -129,59 +131,60 @@ export function SwipeStep({
   if (!current) return null
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-[10px]">
-      <div>
+    <div className="flex min-h-0 flex-1 flex-col bg-surface-bg">
+      <div className="shrink-0 bg-surface-card px-0 pb-2.5 pt-1">
         <p className="text-caption text-text-secondary">嗨，先认识一下你的口味</p>
-        <h2 className="mt-1 text-title-page text-text-primary">
+        <h2 className="mt-0.5 text-title-page leading-[1.2] text-text-primary">
+          左滑不喜欢，
+          <br />
+          右滑
           <span className="border-b-2 border-brand-purple text-brand-purple">
             喜欢
           </span>
-          右滑 · 不喜左滑 · 收藏上滑
         </h2>
-        <p className="mt-2 text-hint leading-[1.45] text-text-tertiary">
-          {lifetimeDone
-            ? '口味档案已建立，本轮滑卡会微调推荐。'
-            : `滑满 ${COLD_START_TARGET} 张后推荐更准（环境 · 价格 · 类型 · 社交）。`}
-        </p>
-        <div className="mt-3">
-          <MvpProgressBar current={records.length} total={total} />
-          {!lifetimeDone && priorSwipeCount > 0 ? (
-            <p className="mt-1.5 text-hint text-text-tertiary">
-              历史已累计 {priorSwipeCount} 次滑卡信号
-            </p>
-          ) : null}
-        </div>
+        {!lifetimeDone ? (
+          <p className="mt-1 text-hint text-text-tertiary">
+            收藏上滑 · 滑满 {COLD_START_TARGET} 张后推荐更准
+          </p>
+        ) : null}
+      </div>
+
+      <div className="shrink-0 bg-surface-card py-2">
+        <MvpProgressBar
+          current={sessionCurrent}
+          total={COLD_START_TARGET}
+        />
         {canSkipUsingProfile && onSkipToQuiz ? (
           <button
             type="button"
             onClick={onSkipToQuiz}
-            className="mt-3 w-full rounded-block border border-brand-purple bg-brand-purple-light py-2.5 text-caption font-medium text-brand-purple-deep"
+            className="mt-2 w-full rounded-block border border-brand-purple bg-brand-purple-light py-2 text-caption font-medium text-brand-purple-deep"
           >
             跳过 · 使用已有口味档案
           </button>
         ) : null}
       </div>
 
-      <div className="relative min-h-[280px] flex-1 pb-2">
+      <div className="relative min-h-[220px] flex-1 px-0 py-2">
         <div
-          className="touch-none select-none"
+          className="h-full touch-none select-none"
           onPointerDown={onPointerDown}
           onPointerMove={onPointerMove}
           onPointerUp={onPointerUp}
           onPointerCancel={onPointerUp}
         >
           <div
-            className="origin-bottom will-change-transform"
+            className="h-full origin-bottom will-change-transform"
             style={{
               transform: `translate(${dx}px, ${dy}px) rotate(${dx * 0.04}deg)`,
             }}
           >
-            <SwipeCardFrame model={current} />
+            <SwipeCardFrame model={current} className="h-full" />
           </div>
         </div>
       </div>
 
-      <div className="flex items-center justify-center gap-[14px] bg-surface-bg py-3">
+      <div className="flex shrink-0 items-center justify-center gap-[14px] px-0 py-2 pb-3">
         <button
           type="button"
           aria-label="不喜欢"

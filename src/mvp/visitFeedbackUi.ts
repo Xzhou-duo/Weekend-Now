@@ -3,11 +3,10 @@ import type { VisitOutcome, VisitPraiseTag, VisitReasonTag } from './types'
 export const OUTCOME_OPTIONS: {
   value: VisitOutcome
   label: string
-  desc: string
 }[] = [
-  { value: 'good', label: '很不错', desc: '会再去或愿意推荐' },
-  { value: 'ok', label: '一般', desc: '没踩雷但也不太想再来' },
-  { value: 'bad', label: '踩雷了', desc: '和预期差比较多' },
+  { value: 'good', label: '好' },
+  { value: 'ok', label: '一般' },
+  { value: 'bad', label: '踩雷' },
 ]
 
 export const BAD_REASON_OPTIONS: { value: VisitReasonTag; label: string }[] = [
@@ -20,15 +19,17 @@ export const BAD_REASON_OPTIONS: { value: VisitReasonTag; label: string }[] = [
 ]
 
 export const GOOD_REASON_OPTIONS: { value: VisitReasonTag; label: string }[] = [
-  { value: 'quiet_env', label: '环境舒服' },
-  { value: 'good_food', label: '吃得满意' },
+  { value: 'quiet_env', label: '环境安静' },
+  { value: 'good_food', label: '菜品好吃' },
   { value: 'nice_vibe', label: '氛围对味' },
-  { value: 'worth_price', label: '值这个价' },
+  { value: 'worth_price', label: '性价比高' },
 ]
 
+/** figma 页面07：满意点多选标签 */
 export const PRAISE_OPTIONS: { value: VisitPraiseTag; label: string }[] = [
-  { value: 'would_return', label: '愿意再来' },
-  { value: 'quiet_env', label: '环境加分' },
-  { value: 'good_food', label: '味道加分' },
-  { value: 'nice_vibe', label: '氛围加分' },
+  { value: 'quiet_env', label: '环境安静' },
+  { value: 'worth_price', label: '性价比高' },
+  { value: 'good_food', label: '菜品好吃' },
+  { value: 'nice_vibe', label: '服务好' },
+  { value: 'would_return', label: '交通方便' },
 ]

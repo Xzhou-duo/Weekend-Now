@@ -10,6 +10,7 @@ export const colors = {
     purpleDeep: '#534AB7',
     purpleDarkest: '#3C3489',
     purpleNavy: '#26215C',
+    purplePale: '#CECBF6',
   },
   teal: {
     DEFAULT: '#1D9E75',

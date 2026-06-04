@@ -15,6 +15,7 @@ import { FeedbackStep } from './components/FeedbackStep'
 import { SurveyPromptStep } from './components/SurveyPromptStep'
 import { QuizStep } from './components/QuizStep'
 import { ResultsStep } from './components/ResultsStep'
+import { ResultsEmptyStep } from './components/ResultsEmptyStep'
 import { RecoSwipeStep } from './components/RecoSwipeStep'
 import { VenueDetailSheet } from './components/VenueDetailSheet'
 import { SwipeStep } from './components/SwipeStep'
@@ -75,6 +76,7 @@ export function MvpApp() {
   const [recoSwipeMountKey, setRecoSwipeMountKey] = useState(0)
   const [visitFeedbackTarget, setVisitFeedbackTarget] =
     useState<Recommendation | null>(null)
+  const [bypassColdStartGate, setBypassColdStartGate] = useState(false)
 
   const resultsViewLogged = useRef(false)
   const mountedRef = useRef(true)
@@ -169,6 +171,7 @@ export function MvpApp() {
     setResultDetailId(null)
     setRecoSwipeMountKey(0)
     setVisitFeedbackTarget(null)
+    setBypassColdStartGate(false)
   }
 
   const bookmarkVenueEnsure = useCallback(
@@ -514,7 +517,27 @@ export function MvpApp() {
             {!showDetail &&
               step === 'results' &&
               recommendations &&
-              isQuizComplete(quiz) && (
+              isQuizComplete(quiz) &&
+              !isColdStartComplete(persisted.coldStartSwipeCount) &&
+              !bypassColdStartGate && (
+                <ResultsEmptyStep
+                  items={recommendations}
+                  quiz={quiz}
+                  swipeCount={persisted.coldStartSwipeCount}
+                  onContinueSwipe={() => setStep('swipe')}
+                  onBrowseAnyway={() => {
+                    trackMvp('mvp_empty_browse_anyway', {})
+                    setBypassColdStartGate(true)
+                  }}
+                />
+              )}
+
+            {!showDetail &&
+              step === 'results' &&
+              recommendations &&
+              isQuizComplete(quiz) &&
+              (isColdStartComplete(persisted.coldStartSwipeCount) ||
+                bypassColdStartGate) && (
                 <ResultsStep
                   items={recommendations}
                   quiz={quiz}

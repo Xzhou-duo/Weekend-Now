@@ -1,4 +1,10 @@
 import { useState } from 'react'
+import {
+  IconArrowLeft,
+  IconMoodHappy,
+  IconMoodNeutral,
+  IconMoodSad,
+} from '@tabler/icons-react'
 import type {
   QuizAnswers,
   Recommendation,
@@ -6,12 +12,14 @@ import type {
   VisitPraiseTag,
   VisitReasonTag,
 } from '../types'
+import { purpleHeader } from '../figmaUi'
 import {
   BAD_REASON_OPTIONS,
   GOOD_REASON_OPTIONS,
   OUTCOME_OPTIONS,
   PRAISE_OPTIONS,
 } from '../visitFeedbackUi'
+import { AiReasonBox } from './AiReasonBox'
 import { PlaceIcon } from './PlaceIcon'
 import { quizSubtitleLine } from '../recoUi'
 
@@ -26,6 +34,27 @@ const toneFg = {
   literate: 'text-brand-purple-darkest',
   bazaar: 'text-amber-deep',
 } as const
+
+const OUTCOME_STYLE: Record<
+  VisitOutcome,
+  { active: string; icon: typeof IconMoodHappy; iconColor: string }
+> = {
+  good: {
+    active: 'border-teal bg-teal-light',
+    icon: IconMoodHappy,
+    iconColor: 'text-teal',
+  },
+  ok: {
+    active: 'border-amber bg-amber-light',
+    icon: IconMoodNeutral,
+    iconColor: 'text-amber',
+  },
+  bad: {
+    active: 'border-danger-border bg-danger-light',
+    icon: IconMoodSad,
+    iconColor: 'text-danger-border',
+  },
+}
 
 export function VisitFeedbackStep({
   item,
@@ -67,120 +96,142 @@ export function VisitFeedbackStep({
 
   const canSubmit =
     outcome !== null &&
-    (outcome === 'ok' || reasons.length > 0 || outcome === 'good')
+    (outcome === 'ok' || reasons.length > 0 || praise.length > 0)
+
+  const aiNote =
+    outcome === 'good' && praise.length > 0
+      ? '根据你的反馈，AI 记录到：独自出行时你更在意「环境安静」，下次会优先推荐此类场所。'
+      : outcome
+        ? '提交后 AI 会结合本次出行更新你的口味画像。'
+        : '选好感受与标签，推荐会越来越贴你。'
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-element overflow-y-auto pb-4">
-      <header className="-mx-page-h rounded-b-[20px] bg-brand-purple px-page-h pb-5 pt-2">
+    <div className="flex min-h-0 flex-1 flex-col bg-surface-bg">
+      <header className={`${purpleHeader} pb-[22px]`}>
         <button
           type="button"
           onClick={onBack}
-          className="text-caption text-text-on-purple underline underline-offset-2"
+          className="flex items-center gap-1.5 text-caption text-text-on-purple"
         >
-          返回
+          <IconArrowLeft size={16} stroke={2} aria-hidden />
+          这次去得怎么样？
         </button>
-        <h2 className="mt-3 text-title-section text-white">去过啦？</h2>
-        <p className="mt-1 text-caption text-text-on-purple">
-          {quizSubtitleLine(quiz)} · 帮我们把画像调准一点
-        </p>
+        <div className="mt-3 flex gap-2 rounded-[12px] bg-brand-purple-pale p-[8px_10px]">
+          <div
+            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-[9px] ${toneBg[item.venue.iconTone]}`}
+          >
+            <PlaceIcon
+              name={item.venue.iconName}
+              size={16}
+              className={toneFg[item.venue.iconTone]}
+            />
+          </div>
+          <div className="min-w-0">
+            <p className="truncate text-body font-medium text-brand-purple-navy">
+              {item.venue.name}
+            </p>
+            <p className="text-caption text-brand-purple-deep">
+              今天 · {quizSubtitleLine(quiz)}
+            </p>
+          </div>
+        </div>
       </header>
 
-      <div className="flex gap-element rounded-card border border-border-card bg-surface-card p-3">
-        <div
-          className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-icon-block ${toneBg[item.venue.iconTone]}`}
-        >
-          <PlaceIcon
-            name={item.venue.iconName}
-            size={26}
-            className={toneFg[item.venue.iconTone]}
-          />
-        </div>
-        <div className="min-w-0">
-          <p className="truncate text-body font-medium text-text-primary">
-            {item.venue.name}
-          </p>
-          <p className="text-hint text-text-tertiary">{item.venue.categoryLine}</p>
-        </div>
+      <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-0 py-3">
+        <section>
+          <p className="mb-2 text-body font-medium text-text-primary">总体感受</p>
+          <div className="flex gap-2">
+            {OUTCOME_OPTIONS.map((opt) => {
+              const on = outcome === opt.value
+              const style = OUTCOME_STYLE[opt.value]
+              const Icon = style.icon
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => {
+                    setOutcome(opt.value)
+                    setReasons([])
+                    if (opt.value !== 'good') setPraise([])
+                  }}
+                  className={`flex flex-1 flex-col items-center gap-1 rounded-block border-[1.5px] px-1 py-3 ${
+                    on
+                      ? style.active
+                      : 'border-border-card bg-surface-card'
+                  }`}
+                >
+                  <Icon
+                    size={20}
+                    className={on ? style.iconColor : 'text-text-tertiary'}
+                    stroke={1.8}
+                  />
+                  <span
+                    className={`text-caption ${on ? 'text-text-primary' : 'text-text-secondary'}`}
+                  >
+                    {opt.label}
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+        </section>
+
+        {outcome === 'good' ? (
+          <section className="rounded-block bg-surface-card px-card-inner py-[10px]">
+            <p className="mb-2 text-caption text-text-secondary">
+              哪里让你满意？（可多选）
+            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {PRAISE_OPTIONS.map((opt) => {
+                const on = praise.includes(opt.value)
+                return (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => togglePraise(opt.value)}
+                    className={
+                      on
+                        ? 'rounded-chip border border-[#AFA9EC] bg-brand-purple-light px-[10px] py-[5px] text-caption text-brand-purple-deep'
+                        : 'rounded-chip border border-border-card bg-surface-bg px-[10px] py-[5px] text-caption text-text-secondary'
+                    }
+                  >
+                    {opt.label}
+                  </button>
+                )
+              })}
+            </div>
+          </section>
+        ) : null}
+
+        {outcome && outcome !== 'ok' && reasonOptions.length > 0 ? (
+          <section className="rounded-block bg-surface-card px-card-inner py-[10px]">
+            <p className="mb-2 text-caption text-text-secondary">
+              {outcome === 'bad' ? '主要是哪方面？（可多选）' : '哪里做得好？'}
+            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {reasonOptions.map((opt) => {
+                const on = reasons.includes(opt.value)
+                return (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => toggleReason(opt.value)}
+                    className={
+                      on
+                        ? 'rounded-chip border border-[#AFA9EC] bg-brand-purple-light px-[10px] py-[5px] text-caption text-brand-purple-deep'
+                        : 'rounded-chip border border-border-card bg-surface-bg px-[10px] py-[5px] text-caption text-text-secondary'
+                    }
+                  >
+                    {opt.label}
+                  </button>
+                )
+              })}
+            </div>
+          </section>
+        ) : null}
+
+        <AiReasonBox title="AI 正在更新你的画像">{aiNote}</AiReasonBox>
       </div>
-
-      <section>
-        <p className="mb-2 text-caption text-text-secondary">整体怎么样？</p>
-        <div className="flex flex-col gap-2">
-          {OUTCOME_OPTIONS.map((opt) => (
-            <button
-              key={opt.value}
-              type="button"
-              onClick={() => {
-                setOutcome(opt.value)
-                setReasons([])
-                setPraise([])
-              }}
-              className={
-                outcome === opt.value
-                  ? 'rounded-block border border-brand-purple bg-brand-purple-light px-3 py-3 text-left'
-                  : 'rounded-block border border-border-card bg-surface-card px-3 py-3 text-left'
-              }
-            >
-              <span className="text-body font-medium text-text-primary">
-                {opt.label}
-              </span>
-              <p className="mt-0.5 text-hint text-text-secondary">{opt.desc}</p>
-            </button>
-          ))}
-        </div>
-      </section>
-
-      {outcome && outcome !== 'ok' && reasonOptions.length > 0 ? (
-        <section>
-          <p className="mb-2 text-caption text-text-secondary">
-            {outcome === 'bad' ? '主要是哪方面？（可多选）' : '哪里做得好？'}
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {reasonOptions.map((opt) => {
-              const on = reasons.includes(opt.value)
-              return (
-                <button
-                  key={opt.value}
-                  type="button"
-                  onClick={() => toggleReason(opt.value)}
-                  className={
-                    on
-                      ? 'rounded-[10px] border border-brand-purple bg-brand-purple px-3 py-2 text-caption text-white'
-                      : 'rounded-[10px] border border-border-card bg-surface-bg px-3 py-2 text-caption text-text-secondary'
-                  }
-                >
-                  {opt.label}
-                </button>
-              )
-            })}
-          </div>
-        </section>
-      ) : null}
-
-      {outcome === 'good' ? (
-        <section>
-          <p className="mb-2 text-caption text-text-secondary">还想夸夸？（可选）</p>
-          <div className="flex flex-wrap gap-2">
-            {PRAISE_OPTIONS.map((opt) => {
-              const on = praise.includes(opt.value)
-              return (
-                <button
-                  key={opt.value}
-                  type="button"
-                  onClick={() => togglePraise(opt.value)}
-                  className={
-                    on
-                      ? 'rounded-[10px] border border-teal bg-teal px-3 py-2 text-caption text-white'
-                      : 'rounded-[10px] border border-border-card bg-surface-bg px-3 py-2 text-caption text-text-secondary'
-                  }
-                >
-                  {opt.label}
-                </button>
-              )
-            })}
-          </div>
-        </section>
-      ) : null}
 
       <button
         type="button"
@@ -193,9 +244,9 @@ export function VisitFeedbackStep({
             praiseTags: outcome === 'good' ? praise : undefined,
           })
         }}
-        className="mt-auto w-full rounded-block bg-brand-purple py-3 text-body font-medium text-white disabled:opacity-40"
+        className="mb-4 shrink-0 rounded-block bg-brand-purple py-3 text-body font-medium text-white disabled:opacity-40"
       >
-        提交反馈
+        提交反馈，让推荐更懂你
       </button>
     </div>
   )

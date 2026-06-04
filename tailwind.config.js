@@ -14,6 +14,7 @@ export default {
         'brand-purple-deep': '#534AB7',
         'brand-purple-darkest': '#3C3489',
         'brand-purple-navy': '#26215C',
+        'brand-purple-pale': '#CECBF6',
         // §2 Secondary
         teal: '#1D9E75',
         'teal-light': '#E1F5EE',
@@ -58,6 +59,10 @@ export default {
         block: '14px',
         'icon-block': '12px',
         badge: '8px',
+        chip: '10px',
+      },
+      height: {
+        'tab-bar': '52px',
       },
       fontFamily: {
         sans: [
@@ -81,6 +86,10 @@ export default {
         ],
         'title-card': [
           '14px',
+          { lineHeight: '1.4', fontWeight: '500' },
+        ],
+        'title-card-sm': [
+          '13px',
           { lineHeight: '1.4', fontWeight: '500' },
         ],
         body: ['12px', { lineHeight: '1.5', fontWeight: '400' }],

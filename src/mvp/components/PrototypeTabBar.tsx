@@ -1,13 +1,9 @@
-import {
-  IconCompass,
-  IconBookmark,
-  IconUser,
-} from '@tabler/icons-react'
+import { IconBookmark, IconMapPin, IconUser } from '@tabler/icons-react'
 
 export type MainTab = 'discover' | 'bookmarks' | 'profile'
 
-const tabs: { id: MainTab; label: string; Icon: typeof IconCompass }[] = [
-  { id: 'discover', label: '发现', Icon: IconCompass },
+const tabs: { id: MainTab; label: string; Icon: typeof IconMapPin }[] = [
+  { id: 'discover', label: '发现', Icon: IconMapPin },
   { id: 'bookmarks', label: '收藏', Icon: IconBookmark },
   { id: 'profile', label: '我的', Icon: IconUser },
 ]
@@ -20,7 +16,7 @@ export function PrototypeTabBar({
   onChange: (tab: MainTab) => void
 }) {
   return (
-    <nav className="flex shrink-0 border-t border-border-card bg-surface-card px-2 pb-2 pt-1.5">
+    <nav className="flex h-tab-bar shrink-0 items-center justify-around border-t border-border-card bg-surface-card">
       {tabs.map(({ id, label, Icon }) => {
         const on = active === id
         return (
@@ -28,7 +24,7 @@ export function PrototypeTabBar({
             key={id}
             type="button"
             onClick={() => onChange(id)}
-            className="flex flex-1 flex-col items-center gap-0.5 py-1"
+            className="flex flex-col items-center gap-0.5 px-2"
           >
             <Icon
               size={20}
@@ -38,8 +34,8 @@ export function PrototypeTabBar({
             <span
               className={
                 on
-                  ? 'text-[10px] font-medium text-brand-purple'
-                  : 'text-[10px] text-text-tertiary'
+                  ? 'text-[8px] font-medium text-brand-purple'
+                  : 'text-[8px] text-text-tertiary'
               }
             >
               {label}
