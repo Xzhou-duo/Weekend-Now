@@ -29,7 +29,7 @@ npm run build
 
 ## MVP 已实现功能
 
-`src/mvp/`：**8 张滑卡** → **今日三题** → **Top3 推荐（优先 MiMo-V2.5-Pro）** → **整体反馈（三选一）** → **腾讯问卷引导页**（默认链接见 `src/mvp/surveyUrl.ts`，可用 `VITE_SURVEY_URL` 覆盖）。  
+`src/mvp/`：**20 张滑卡 + 本机口味档案** → **今日三题（默认选项）** → **8 条推荐池 + 刷卡重排 + 详情** → **出行后按店反馈（情境归因写回画像）** → **整体反馈** → **问卷**；底部 Tab：**发现 / 收藏 / 我的口味**。候选 POI 22 条（上海 mock）。  
 `npm run dev` + 本地 API 时会先请求 `POST /api/recommend`（MiMo），失败或未配置密钥则自动使用 `src/mvp/recommend.ts` 规则兜底。
 
 ### 本地 MiMo API 示例

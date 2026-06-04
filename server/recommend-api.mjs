@@ -138,6 +138,7 @@ function buildUserPayload(body) {
     {
       swipeRecords,
       quiz,
+      longTermPreference: body.longTermPreference ?? null,
       candidates: venues.map((v) => ({
         id: v.id,
         name: v.name,

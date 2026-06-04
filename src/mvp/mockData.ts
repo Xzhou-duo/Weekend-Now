@@ -7,7 +7,10 @@ import type {
   Venue,
 } from './types'
 
-/** 固定 8 张滑卡，覆盖多维标签（MVP-validation：约 8 张） */
+/**
+ * PRD §03/§05：冷启动 20 张滑卡，覆盖环境 / 价格 / 类型 / 社交四维度。
+ * 选取时尽量拉开 TasteTag 差异，避免近邻重复。
+ */
 export const SWIPE_DECK: SwipeCardModel[] = [
   {
     id: 'c1',
@@ -113,9 +116,165 @@ export const SWIPE_DECK: SwipeCardModel[] = [
     iconTone: 'literate',
     iconName: 'tools-kitchen-2',
   },
+  {
+    id: 'c9',
+    title: '老城厢弄堂小面',
+    description: '街坊常去，汤头鲜、出餐快',
+    chips: [
+      { variant: 'teal', text: '亲民' },
+      { variant: 'purple', text: '正餐' },
+      { variant: 'amber', text: '社区' },
+    ],
+    tags: ['food', 'budget', 'neighbor', 'solo', 'walk'],
+    iconTone: 'bazaar',
+    iconName: 'tools-kitchen-2',
+  },
+  {
+    id: 'c10',
+    title: '屋顶花园酒吧',
+    description: '户外座位与城市夜景，适合约会小聚',
+    chips: [
+      { variant: 'teal', text: '户外' },
+      { variant: 'purple', text: '小资' },
+      { variant: 'amber', text: '两人' },
+    ],
+    tags: ['outdoor', 'premium', 'pair', 'lively', 'taxi'],
+    iconTone: 'natural',
+    iconName: 'building-store',
+  },
+  {
+    id: 'c11',
+    title: '独立书店兼茶室',
+    description: '安静翻书，适合独处恢复能量',
+    chips: [
+      { variant: 'teal', text: '安静' },
+      { variant: 'purple', text: '文艺' },
+      { variant: 'amber', text: '步行' },
+    ],
+    tags: ['quiet', 'design', 'solo', 'cafe', 'walk'],
+    iconTone: 'literate',
+    iconName: 'plant-2',
+  },
+  {
+    id: 'c12',
+    title: '周末农夫市集',
+    description: '露天摊位多，适合三五人边逛边吃',
+    chips: [
+      { variant: 'teal', text: '户外' },
+      { variant: 'purple', text: '烟火气' },
+      { variant: 'amber', text: '多人' },
+    ],
+    tags: ['market', 'outdoor', 'group', 'fresh', 'budget'],
+    iconTone: 'bazaar',
+    iconName: 'building-store',
+  },
+  {
+    id: 'c13',
+    title: '商场地下美食街',
+    description: '选择多、决策成本低，随便吃吃',
+    chips: [
+      { variant: 'teal', text: '热闹' },
+      { variant: 'purple', text: '亲民' },
+      { variant: 'amber', text: '地铁' },
+    ],
+    tags: ['food', 'lively', 'mid', 'metro', 'group'],
+    iconTone: 'natural',
+    iconName: 'tools-kitchen-2',
+  },
+  {
+    id: 'c14',
+    title: '城郊露营咖啡',
+    description: '开车稍远，但空间开阔能透气',
+    chips: [
+      { variant: 'teal', text: '户外' },
+      { variant: 'purple', text: '新鲜感' },
+      { variant: 'amber', text: '打车' },
+    ],
+    tags: ['outdoor', 'fresh', 'cafe', 'taxi', 'pair'],
+    iconTone: 'natural',
+    iconName: 'plant-2',
+  },
+  {
+    id: 'c15',
+    title: '深夜拉面吧台',
+    description: '一人食友好，吃完无负担',
+    chips: [
+      { variant: 'teal', text: '正餐' },
+      { variant: 'purple', text: '独处' },
+      { variant: 'amber', text: '亲民' },
+    ],
+    tags: ['food', 'solo', 'budget', 'metro', 'quiet'],
+    iconTone: 'bazaar',
+    iconName: 'tools-kitchen-2',
+  },
+  {
+    id: 'c16',
+    title: '文创园区散步',
+    description: '看展逛街一体，适合想换环境',
+    chips: [
+      { variant: 'teal', text: '设计感' },
+      { variant: 'purple', text: '户外' },
+      { variant: 'amber', text: '新鲜' },
+    ],
+    tags: ['design', 'fresh', 'outdoor', 'pair', 'metro'],
+    iconTone: 'literate',
+    iconName: 'plant-2',
+  },
+  {
+    id: 'c17',
+    title: '老字号点心楼',
+    description: '排队也值，适合认真吃一顿',
+    chips: [
+      { variant: 'teal', text: '吃好' },
+      { variant: 'purple', text: '中端' },
+      { variant: 'amber', text: '家庭' },
+    ],
+    tags: ['food', 'premium', 'group', 'neighbor', 'taxi'],
+    iconTone: 'natural',
+    iconName: 'tools-kitchen-2',
+  },
+  {
+    id: 'c18',
+    title: '滨江骑行道',
+    description: '低强度运动 + 江景，放空首选',
+    chips: [
+      { variant: 'teal', text: '户外' },
+      { variant: 'purple', text: '安静' },
+      { variant: 'amber', text: '免费' },
+    ],
+    tags: ['outdoor', 'quiet', 'solo', 'walk', 'fresh'],
+    iconTone: 'natural',
+    iconName: 'building-store',
+  },
+  {
+    id: 'c19',
+    title: '桌游吧+简餐',
+    description: '聚会不怕冷场，适合 3 人以上',
+    chips: [
+      { variant: 'teal', text: '社交' },
+      { variant: 'purple', text: '热闹' },
+      { variant: 'amber', text: '多人' },
+    ],
+    tags: ['group', 'lively', 'mid', 'metro', 'pair'],
+    iconTone: 'literate',
+    iconName: 'tools-kitchen-2',
+  },
+  {
+    id: 'c20',
+    title: '巷子里的越南粉',
+    description: '酸辣开胃，人均友好',
+    chips: [
+      { variant: 'teal', text: '异域' },
+      { variant: 'purple', text: '亲民' },
+      { variant: 'amber', text: '快餐' },
+    ],
+    tags: ['food', 'group', 'metro', 'lively', 'budget'],
+    iconTone: 'bazaar',
+    iconName: 'tools-kitchen-2',
+  },
 ]
 
-/** 候选池：规则引擎从中选 3 条（假数据 / 上海吃玩混合） */
+/** 候选池：上海吃/玩 mock（PRD 阶段二扩至 22 条，支撑 8 条推荐 + 探索位） */
 export const VENUE_POOL: Venue[] = [
   {
     id: 'v1',
@@ -124,6 +283,7 @@ export const VENUE_POOL: Venue[] = [
     tags: ['quiet', 'cafe', 'solo', 'walk', 'design'],
     iconTone: 'literate',
     iconName: 'plant-2',
+    distanceKm: 0.9,
   },
   {
     id: 'v2',
@@ -132,6 +292,7 @@ export const VENUE_POOL: Venue[] = [
     tags: ['market', 'lively', 'budget', 'food', 'group', 'walk'],
     iconTone: 'bazaar',
     iconName: 'building-store',
+    distanceKm: 1.4,
   },
   {
     id: 'v3',
@@ -140,6 +301,7 @@ export const VENUE_POOL: Venue[] = [
     tags: ['food', 'pair', 'metro', 'mid', 'design'],
     iconTone: 'natural',
     iconName: 'tools-kitchen-2',
+    distanceKm: 2.2,
   },
   {
     id: 'v4',
@@ -148,6 +310,7 @@ export const VENUE_POOL: Venue[] = [
     tags: ['outdoor', 'quiet', 'walk', 'solo', 'neighbor'],
     iconTone: 'natural',
     iconName: 'building-store',
+    distanceKm: 5.8,
   },
   {
     id: 'v5',
@@ -156,6 +319,7 @@ export const VENUE_POOL: Venue[] = [
     tags: ['design', 'fresh', 'pair', 'metro', 'quiet'],
     iconTone: 'literate',
     iconName: 'plant-2',
+    distanceKm: 1.7,
   },
   {
     id: 'v6',
@@ -164,6 +328,7 @@ export const VENUE_POOL: Venue[] = [
     tags: ['food', 'premium', 'pair', 'taxi', 'quiet'],
     iconTone: 'natural',
     iconName: 'tools-kitchen-2',
+    distanceKm: 3.4,
   },
   {
     id: 'v7',
@@ -172,6 +337,7 @@ export const VENUE_POOL: Venue[] = [
     tags: ['lively', 'group', 'metro', 'mid', 'food'],
     iconTone: 'bazaar',
     iconName: 'tools-kitchen-2',
+    distanceKm: 4.1,
   },
   {
     id: 'v8',
@@ -180,6 +346,7 @@ export const VENUE_POOL: Venue[] = [
     tags: ['cafe', 'quiet', 'solo', 'walk', 'budget'],
     iconTone: 'bazaar',
     iconName: 'building-store',
+    distanceKm: 0.7,
   },
   {
     id: 'v9',
@@ -188,6 +355,124 @@ export const VENUE_POOL: Venue[] = [
     tags: ['design', 'fresh', 'solo', 'pair', 'taxi', 'outdoor'],
     iconTone: 'literate',
     iconName: 'plant-2',
+    distanceKm: 6.2,
+  },
+  {
+    id: 'v10',
+    name: '长寿路 · 城市露营主题餐吧',
+    categoryLine: '户外座位 · 适合放空',
+    tags: ['outdoor', 'fresh', 'pair', 'metro', 'mid', 'lively'],
+    iconTone: 'natural',
+    iconName: 'building-store',
+    distanceKm: 8.4,
+  },
+  {
+    id: 'v11',
+    name: '陕西南路 · 古早糖水铺',
+    categoryLine: '甜品小憩 · 性价比',
+    tags: ['cafe', 'quiet', 'budget', 'walk', 'neighbor'],
+    iconTone: 'bazaar',
+    iconName: 'tools-kitchen-2',
+    distanceKm: 1.1,
+  },
+  {
+    id: 'v12',
+    name: '徐汇滨江 · 滑板公园咖啡亭',
+    categoryLine: '江边风 · 偏潮',
+    tags: ['outdoor', 'fresh', 'solo', 'design', 'taxi', 'metro'],
+    iconTone: 'literate',
+    iconName: 'plant-2',
+    distanceKm: 11,
+  },
+  {
+    id: 'v13',
+    name: '安福路 · 法租界小酒馆',
+    categoryLine: '小酌 · 氛围感',
+    tags: ['pair', 'lively', 'premium', 'metro', 'design'],
+    iconTone: 'literate',
+    iconName: 'tools-kitchen-2',
+    distanceKm: 2.5,
+  },
+  {
+    id: 'v14',
+    name: '田子坊 · 弄堂杂货铺',
+    categoryLine: '逛吃 · 游客向',
+    tags: ['market', 'lively', 'group', 'metro', 'budget'],
+    iconTone: 'bazaar',
+    iconName: 'building-store',
+    distanceKm: 3.1,
+  },
+  {
+    id: 'v15',
+    name: '武康路 · 老洋房下午茶',
+    categoryLine: '甜品 · 适合拍照',
+    tags: ['cafe', 'design', 'pair', 'walk', 'premium'],
+    iconTone: 'literate',
+    iconName: 'plant-2',
+    distanceKm: 1.3,
+  },
+  {
+    id: 'v16',
+    name: '七宝老街 · 糯米糕团',
+    categoryLine: '小吃 · 老城味道',
+    tags: ['food', 'budget', 'group', 'metro', 'neighbor'],
+    iconTone: 'bazaar',
+    iconName: 'tools-kitchen-2',
+    distanceKm: 12,
+  },
+  {
+    id: 'v17',
+    name: '前滩太古里 · 露台西餐',
+    categoryLine: '正餐 · 略贵',
+    tags: ['food', 'premium', 'pair', 'taxi', 'outdoor'],
+    iconTone: 'natural',
+    iconName: 'tools-kitchen-2',
+    distanceKm: 9.5,
+  },
+  {
+    id: 'v18',
+    name: '静安公园 · 晨练后豆浆铺',
+    categoryLine: '早餐 · 社区感',
+    tags: ['neighbor', 'budget', 'solo', 'walk', 'food'],
+    iconTone: 'bazaar',
+    iconName: 'building-store',
+    distanceKm: 1.8,
+  },
+  {
+    id: 'v19',
+    name: 'M50 创意园 · 画廊咖啡',
+    categoryLine: '看展 · 安静',
+    tags: ['design', 'quiet', 'fresh', 'solo', 'metro'],
+    iconTone: 'literate',
+    iconName: 'plant-2',
+    distanceKm: 4.8,
+  },
+  {
+    id: 'v20',
+    name: '五角场 · 韩式炸鸡啤酒',
+    categoryLine: '夜宵 · 热闹',
+    tags: ['food', 'lively', 'group', 'metro', 'mid'],
+    iconTone: 'bazaar',
+    iconName: 'tools-kitchen-2',
+    distanceKm: 7.2,
+  },
+  {
+    id: 'v21',
+    name: '世纪公园 · 草坪野餐区',
+    categoryLine: '户外 · 自带餐食',
+    tags: ['outdoor', 'group', 'fresh', 'taxi', 'quiet'],
+    iconTone: 'natural',
+    iconName: 'building-store',
+    distanceKm: 10,
+  },
+  {
+    id: 'v22',
+    name: '南京西路 · 深夜食堂居酒屋',
+    categoryLine: '一人食 · 吧台位',
+    tags: ['food', 'solo', 'quiet', 'metro', 'mid'],
+    iconTone: 'natural',
+    iconName: 'tools-kitchen-2',
+    distanceKm: 2.8,
   },
 ]
 

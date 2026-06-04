@@ -1,5 +1,18 @@
 import type { QuizAnswers, Recommendation, SwipeAction, TasteTag, Venue } from './types'
 import { VENUE_POOL } from './mockData'
+import { blendPersonaFallback } from './persona'
+import {
+  mergePreferenceForRecommend,
+  SESSION_SWIPE_PREF_WEIGHT,
+} from './preferenceMerge'
+
+/** PRD 场景三：推荐池 8 条，约 6 贴合 + 2 探索 */
+export const RECO_DECK_MAX = 8
+export const RECO_EXPLORE_SLOTS = 2
+
+/** 今日三题情境权重大于长期画像（PRD §04） */
+export const QUIZ_CONTEXT_WEIGHT = 2.65
+export const LONG_TERM_TAG_WEIGHT = 0.52
 
 const TAG_LABELS: Partial<Record<TasteTag, string>> = {
   quiet: '安静',
@@ -45,7 +58,6 @@ function emptyScores(): Record<TasteTag, number> {
   }
 }
 
-/** 滑卡反馈 → 偏好向量 */
 export function buildPreferenceVector(
   records: { tags: TasteTag[]; action: SwipeAction }[],
 ): Record<TasteTag, number> {
@@ -72,7 +84,7 @@ function quizBoost(venue: Venue, quiz: QuizAnswers): number {
     if (has('outdoor')) b += 0.8
   }
   if (mood === 'fresh') {
-    if (has('design') || has('market') || has('fresh')) b += 2
+    if (has('design') || has('market') || has('fresh')) b += 2.2
   }
   if (mood === 'food') {
     if (has('food') || has('premium')) b += 2.5
@@ -82,19 +94,51 @@ function quizBoost(venue: Venue, quiz: QuizAnswers): number {
   if (distance === 'walk' && has('walk')) b += 2
   if (distance === 'metro' && has('metro')) b += 2
   if (distance === 'taxi') b += 0.8
+  if (
+    distance === 'walk' &&
+    venue.distanceKm != null &&
+    venue.distanceKm > 2.5
+  ) {
+    b -= 1.2
+  }
+  if (
+    distance === 'taxi' &&
+    venue.distanceKm != null &&
+    venue.distanceKm < 1.2
+  ) {
+    b -= 0.4
+  }
 
   return b
 }
 
-function scoreVenue(
-  venue: Venue,
-  pref: Record<TasteTag, number>,
-  quiz: QuizAnswers,
-): number {
-  let s = 0
-  for (const t of venue.tags) s += pref[t] ?? 0
-  s += quizBoost(venue, quiz)
-  return s
+export type ScoreContext = {
+  longTerm: Record<TasteTag, number>
+  sessionRecords: { tags: TasteTag[]; action: SwipeAction }[]
+  quiz: Required<QuizAnswers>
+  sessionBlendWeight: number
+  recoLiveSession?: { tags: TasteTag[]; action: SwipeAction }[]
+  bookmarkVenueIds?: string[]
+}
+
+export function scoreVenueWithContext(venue: Venue, ctx: ScoreContext): number {
+  const longTerm = blendPersonaFallback(ctx.longTerm, ctx.quiz)
+  const sessionPref = buildPreferenceVector(ctx.sessionRecords)
+  const livePref = ctx.recoLiveSession
+    ? buildPreferenceVector(ctx.recoLiveSession)
+    : emptyScores()
+
+  let tagScore = 0
+  for (const t of venue.tags) {
+    tagScore += (longTerm[t] ?? 0) * LONG_TERM_TAG_WEIGHT
+    tagScore +=
+      sessionPref[t] * ctx.sessionBlendWeight * SESSION_SWIPE_PREF_WEIGHT
+    tagScore += livePref[t] * 1.15
+  }
+
+  let score = tagScore + quizBoost(venue, ctx.quiz) * QUIZ_CONTEXT_WEIGHT
+  if (ctx.bookmarkVenueIds?.includes(venue.id)) score += 1.6
+  return score
 }
 
 function topTagsFromPref(
@@ -153,6 +197,7 @@ export function buildReason(
   venue: Venue,
   quiz: QuizAnswers,
   topTags: TasteTag[],
+  hadSessionSwipe = true,
 ): string {
   const tagText =
     topTags.length > 0
@@ -171,36 +216,198 @@ export function buildReason(
     .filter(Boolean)
     .join('，')
 
-  return `结合你今天「${head}」，以及你刚才滑卡时更买账的「${tagText}」这类气质，「${venue.name}」相对更贴你此刻的状态——${venue.categoryLine}。`
+  const tasteClause = hadSessionSwipe
+    ? `你刚才滑卡时更买账的「${tagText}」`
+    : `你积累的口味画像里「${tagText}」`
+
+  return `结合你今天「${head}」，以及${tasteClause}这类气质，「${venue.name}」相对更贴你此刻的状态——${venue.categoryLine}。`
 }
 
-/** 规则 + 固定池选 Top3；不调用外网，作为 API 失败兜底同一套逻辑 */
-export function recommendTop3(
-  swipeRecords: { tags: TasteTag[]; action: SwipeAction }[],
-  quiz: QuizAnswers,
+function toPercentiles(
+  rows: { score: number; rec: Recommendation }[],
 ): Recommendation[] {
-  const pref = buildPreferenceVector(swipeRecords)
+  if (rows.length === 0) return []
+  const max = Math.max(...rows.map((r) => r.score), 1)
+  const min = Math.min(...rows.map((r) => r.score))
+  const span = Math.max(max - min, 0.01)
+  return rows.map((row, idx) => ({
+    ...row.rec,
+    scorePercent: Math.round(
+      Math.min(96, Math.max(62, 62 + ((row.score - min) / span) * 34 - idx * 1.5)),
+    ),
+  }))
+}
+
+export type RecommendOptions = {
+  longTermPreference?: Record<TasteTag, number>
+  sessionBlendWeight?: number
+  bookmarkVenueIds?: string[]
+}
+
+function buildScoreContext(
+  swipeRecords: { tags: TasteTag[]; action: SwipeAction }[],
+  quiz: Required<QuizAnswers>,
+  options?: RecommendOptions,
+): ScoreContext {
+  const longTerm = options?.longTermPreference ?? emptyScores()
+  const sessionBlendWeight =
+    options?.sessionBlendWeight !== undefined
+      ? options.sessionBlendWeight
+      : swipeRecords.length > 0
+        ? SESSION_SWIPE_PREF_WEIGHT
+        : 0
+  return {
+    longTerm,
+    sessionRecords: swipeRecords,
+    quiz,
+    sessionBlendWeight,
+    bookmarkVenueIds: options?.bookmarkVenueIds,
+  }
+}
+
+/** PRD：8 条推荐池（6 高匹配 + 2 探索） */
+export function recommendDeck8(
+  swipeRecords: { tags: TasteTag[]; action: SwipeAction }[],
+  quiz: Required<QuizAnswers>,
+  options?: RecommendOptions,
+): Recommendation[] {
+  const ctx = buildScoreContext(swipeRecords, quiz, options)
+  const pref = mergePreferenceForRecommend(
+    ctx.longTerm,
+    swipeRecords,
+    ctx.sessionBlendWeight,
+  )
   const topTags = topTagsFromPref(pref, 4)
+  const hadSessionSwipe = swipeRecords.length > 0
 
   const ranked = [...VENUE_POOL]
     .map((venue) => ({
       venue,
-      score: scoreVenue(venue, pref, quiz),
+      score: scoreVenueWithContext(venue, ctx),
     }))
     .sort((a, b) => b.score - a.score)
 
+  const exploitTarget = RECO_DECK_MAX - RECO_EXPLORE_SLOTS
   const seen = new Set<string>()
-  const out: Recommendation[] = []
+  const exploit: { score: number; rec: Recommendation }[] = []
+  const pool: typeof ranked = []
+
   for (const row of ranked) {
-    if (out.length >= 3) break
+    if (exploit.length >= exploitTarget) break
     if (seen.has(row.venue.id)) continue
     seen.add(row.venue.id)
-    out.push({
-      venue: row.venue,
-      reason: buildReason(row.venue, quiz, topTags),
+    exploit.push({
+      score: row.score,
+      rec: {
+        venue: row.venue,
+        reason: buildReason(row.venue, quiz, topTags, hadSessionSwipe),
+        explore: false,
+      },
     })
   }
 
-  /** 兜底：池子不足理论上不会发生 */
-  return out.slice(0, 3)
+  const medianScore =
+    exploit[Math.floor(exploit.length / 2)]?.score ?? ranked[0]?.score ?? 0
+
+  for (const row of ranked) {
+    if (seen.has(row.venue.id)) continue
+    if (row.score > medianScore * 0.92) continue
+    pool.push(row)
+  }
+  for (const row of ranked) {
+    if (!seen.has(row.venue.id)) pool.push(row)
+  }
+
+  const explore: { score: number; rec: Recommendation }[] = []
+  let pi = 0
+  while (explore.length < RECO_EXPLORE_SLOTS && pi < pool.length) {
+    const row = pool[pi++]
+    if (seen.has(row.venue.id)) continue
+    seen.add(row.venue.id)
+    explore.push({
+      score: row.score,
+      rec: {
+        venue: row.venue,
+        reason: `${buildReason(row.venue, quiz, topTags, hadSessionSwipe)}（换换口味，可能也有惊喜）`,
+        explore: true,
+      },
+    })
+  }
+
+  return toPercentiles([...exploit, ...explore]).slice(0, RECO_DECK_MAX)
+}
+
+export function recommendTop3(
+  swipeRecords: { tags: TasteTag[]; action: SwipeAction }[],
+  quiz: QuizAnswers,
+  options?: RecommendOptions,
+): Recommendation[] {
+  if (!quiz.party || !quiz.mood || !quiz.distance) return []
+  return recommendDeck8(
+    swipeRecords,
+    quiz as Required<QuizAnswers>,
+    options,
+  ).slice(0, 3)
+}
+
+/** MiMo 返回 3 条后补足 8 条推荐 deck */
+export function augmentMimoToRecoDeck(
+  mimoTop: Recommendation[],
+  swipeRecords: { tags: TasteTag[]; action: SwipeAction }[],
+  quiz: Required<QuizAnswers>,
+  options?: RecommendOptions,
+): Recommendation[] {
+  const full = recommendDeck8(swipeRecords, quiz, options)
+  const seen = new Set(mimoTop.map((r) => r.venue.id))
+  const head = mimoTop.map((r, i) => ({
+    ...r,
+    explore: false,
+    scorePercent: r.scorePercent ?? 90 - i * 4,
+  }))
+  const tail = full.filter((r) => !seen.has(r.venue.id))
+  const merged = [...head, ...tail].slice(0, RECO_DECK_MAX)
+  return merged.map((r, i) => ({
+    ...r,
+    scorePercent: r.scorePercent ?? Math.max(65, 88 - i * 3),
+  }))
+}
+
+/** 推荐刷卡会话：对剩余条目实时重排 */
+export function rerankRecommendationListByRecoSwipe(
+  remaining: Recommendation[],
+  recoSession: { tags: TasteTag[]; action: SwipeAction }[],
+  swipeRecords: { tags: TasteTag[]; action: SwipeAction }[],
+  quiz: Required<QuizAnswers>,
+  options: RecommendOptions,
+): Recommendation[] {
+  const ctx: ScoreContext = {
+    ...buildScoreContext(swipeRecords, quiz, options),
+    recoLiveSession: recoSession,
+  }
+  const pref = mergePreferenceForRecommend(
+    ctx.longTerm,
+    swipeRecords,
+    ctx.sessionBlendWeight,
+  )
+  const topTags = topTagsFromPref(pref, 4)
+  const hadSessionSwipe = swipeRecords.length > 0
+
+  const ranked = remaining
+    .map((rec) => ({
+      rec,
+      score: scoreVenueWithContext(rec.venue, ctx),
+    }))
+    .sort((a, b) => b.score - a.score)
+
+  return toPercentiles(
+    ranked.map((row) => ({
+      score: row.score,
+      rec: {
+        ...row.rec,
+        reason: row.rec.explore
+          ? row.rec.reason
+          : buildReason(row.rec.venue, quiz, topTags, hadSessionSwipe),
+      },
+    })),
+  )
 }

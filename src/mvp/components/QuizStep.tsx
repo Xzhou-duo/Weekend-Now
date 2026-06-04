@@ -55,7 +55,7 @@ export function QuizStep({
           今天出门前，先说下状态？
         </h2>
         <p className="mt-2 text-caption text-text-on-purple">
-          三组选项就够，选完就给你今天的小清单。
+          已选好默认值，可直接生成；也可改一改更贴今天。
         </p>
       </header>
 

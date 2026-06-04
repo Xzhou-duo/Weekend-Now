@@ -1,28 +1,68 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type {
+  FeedbackValue,
   QuizAnswers,
   Recommendation,
   Step,
   SwipeAction,
   TasteTag,
+  VisitOutcome,
+  VisitPraiseTag,
+  VisitReasonTag,
 } from './types'
+import { DEFAULT_QUIZ_SELECTION } from './types'
 import { FeedbackStep } from './components/FeedbackStep'
 import { SurveyPromptStep } from './components/SurveyPromptStep'
 import { QuizStep } from './components/QuizStep'
 import { ResultsStep } from './components/ResultsStep'
+import { RecoSwipeStep } from './components/RecoSwipeStep'
+import { VenueDetailSheet } from './components/VenueDetailSheet'
 import { SwipeStep } from './components/SwipeStep'
+import { VisitFeedbackStep } from './components/VisitFeedbackStep'
+import { TasteProfileView } from './components/TasteProfileView'
+import { BookmarksView } from './components/BookmarksView'
+import { PrototypeTabBar, type MainTab } from './components/PrototypeTabBar'
 import { VENUE_POOL } from './mockData'
-import { recommendTop3 } from './recommend'
+import {
+  augmentMimoToRecoDeck,
+  recommendDeck8,
+  rerankRecommendationListByRecoSwipe,
+} from './recommend'
 import { fetchMiMoRecommendations } from './fetchMiMoRecommend'
 import { trackMvp } from './analytics'
+import { isColdStartComplete } from './coldStart'
+import {
+  applySwipeSessionToPersist,
+  bumpOverallFeedback,
+  bumpSessionCount,
+  canSkipColdStartSwipe,
+  loadMvpPersist,
+  saveMvpPersist,
+  type PersistedMvpStateV1,
+} from './persist'
+import { effectiveSwipeRecordsForApi } from './preferenceMerge'
+import {
+  applyVisitFeedbackToPreference,
+  applyVisitPraiseToPreference,
+} from './visitFeedback'
 
 function isQuizComplete(q: QuizAnswers): q is Required<QuizAnswers> {
   return Boolean(q.party && q.mood && q.distance)
 }
 
+function initialStep(persisted: PersistedMvpStateV1): Step {
+  return canSkipColdStartSwipe(persisted) ? 'quiz' : 'swipe'
+}
+
 export function MvpApp() {
-  const [step, setStep] = useState<Step>('swipe')
-  const [quiz, setQuiz] = useState<QuizAnswers>({})
+  const [mainTab, setMainTab] = useState<MainTab>('discover')
+  const [persisted, setPersisted] = useState<PersistedMvpStateV1>(() =>
+    loadMvpPersist(),
+  )
+  const [step, setStep] = useState<Step>(() => initialStep(loadMvpPersist()))
+  const [quiz, setQuiz] = useState<QuizAnswers>(() => ({
+    ...DEFAULT_QUIZ_SELECTION,
+  }))
   const [swipeRecords, setSwipeRecords] = useState<
     { tags: TasteTag[]; action: SwipeAction }[]
   >([])
@@ -31,10 +71,46 @@ export function MvpApp() {
   )
   const [recoSource, setRecoSource] = useState<'mimo' | 'rules' | null>(null)
   const [recoLoading, setRecoLoading] = useState(false)
+  const [resultDetailId, setResultDetailId] = useState<string | null>(null)
+  const [recoSwipeMountKey, setRecoSwipeMountKey] = useState(0)
+  const [visitFeedbackTarget, setVisitFeedbackTarget] =
+    useState<Recommendation | null>(null)
 
   const resultsViewLogged = useRef(false)
   const mountedRef = useRef(true)
   const submitAbortRef = useRef<AbortController | null>(null)
+  const sessionBumpedRef = useRef(false)
+  const postVisitFeedbackStepRef = useRef<Step>('results')
+
+  const canSkipSwipe = canSkipColdStartSwipe(persisted)
+
+  const venuesById = useMemo(
+    () => new Map(VENUE_POOL.map((v) => [v.id, v])),
+    [],
+  )
+
+  const bookmarkedIds = useMemo(
+    () => new Set(persisted.bookmarks.map((b) => b.venueId)),
+    [persisted.bookmarks],
+  )
+
+  const detailRecommendation = useMemo(() => {
+    if (
+      !recommendations ||
+      !resultDetailId ||
+      (step !== 'results' && step !== 'reco-swipe')
+    ) {
+      return null
+    }
+    return recommendations.find((r) => r.venue.id === resultDetailId) ?? null
+  }, [recommendations, resultDetailId, step])
+
+  const showTabBar =
+    mainTab !== 'discover' ||
+    (step !== 'visit-feedback' &&
+      !(
+        (step === 'results' || step === 'reco-swipe') && resultDetailId !== null
+      ))
 
   useEffect(() => {
     mountedRef.current = true
@@ -43,6 +119,29 @@ export function MvpApp() {
       submitAbortRef.current?.abort()
     }
   }, [])
+
+  useEffect(() => {
+    if (sessionBumpedRef.current) return
+    sessionBumpedRef.current = true
+    setPersisted((prev) => {
+      const next = bumpSessionCount(prev)
+      saveMvpPersist(next)
+      trackMvp('mvp_app_session', {
+        sessionCount: next.sessionCount,
+        coldStartComplete: isColdStartComplete(next.coldStartSwipeCount),
+      })
+      return next
+    })
+  }, [])
+
+  useEffect(() => {
+    if (mainTab === 'profile') {
+      trackMvp('mvp_profile_view', {})
+    }
+    if (mainTab === 'bookmarks') {
+      trackMvp('mvp_bookmarks_view', { count: loadMvpPersist().bookmarks.length })
+    }
+  }, [mainTab])
 
   useEffect(() => {
     if (
@@ -60,20 +159,185 @@ export function MvpApp() {
 
   const restart = () => {
     resultsViewLogged.current = false
-    setStep('swipe')
-    setQuiz({})
+    setMainTab('discover')
+    setStep(canSkipColdStartSwipe(loadMvpPersist()) ? 'quiz' : 'swipe')
+    setQuiz({ ...DEFAULT_QUIZ_SELECTION })
     setSwipeRecords([])
     setRecommendations(null)
     setRecoSource(null)
     setRecoLoading(false)
+    setResultDetailId(null)
+    setRecoSwipeMountKey(0)
+    setVisitFeedbackTarget(null)
   }
+
+  const bookmarkVenueEnsure = useCallback(
+    (venueId: string) => {
+      setPersisted((prev) => {
+        if (prev.bookmarks.some((b) => b.venueId === venueId)) return prev
+        trackMvp('mvp_bookmark_add', { venueId })
+        const next: PersistedMvpStateV1 = {
+          ...prev,
+          bookmarks: [
+            ...prev.bookmarks,
+            {
+              venueId,
+              savedAt: Date.now(),
+              quizSnapshot: isQuizComplete(quiz) ? quiz : undefined,
+            },
+          ],
+        }
+        saveMvpPersist(next)
+        return next
+      })
+    },
+    [quiz],
+  )
+
+  const onToggleBookmark = useCallback(
+    (venueId: string) => {
+      setPersisted((prev) => {
+        const exists = prev.bookmarks.some((b) => b.venueId === venueId)
+        if (exists) {
+          trackMvp('mvp_bookmark_remove', { venueId })
+          const next = {
+            ...prev,
+            bookmarks: prev.bookmarks.filter((b) => b.venueId !== venueId),
+          }
+          saveMvpPersist(next)
+          return next
+        }
+        trackMvp('mvp_bookmark_add', { venueId })
+        const next: PersistedMvpStateV1 = {
+          ...prev,
+          bookmarks: [
+            ...prev.bookmarks,
+            {
+              venueId,
+              savedAt: Date.now(),
+              quizSnapshot: isQuizComplete(quiz) ? quiz : undefined,
+            },
+          ],
+        }
+        saveMvpPersist(next)
+        return next
+      })
+    },
+    [quiz],
+  )
+
+  const onVenueFeedback = useCallback(
+    (payload: {
+      venueId: string
+      venueTags: TasteTag[]
+      outcome: VisitOutcome
+      reasons: VisitReasonTag[]
+      praiseTags?: VisitPraiseTag[]
+    }) => {
+      if (!isQuizComplete(quiz)) return
+      setPersisted((prev) => {
+        let nextVec = applyVisitFeedbackToPreference(prev.preferenceVector, {
+          venueTags: payload.venueTags,
+          quiz,
+          outcome: payload.outcome,
+          reasons: payload.reasons,
+        })
+        if (payload.praiseTags?.length) {
+          nextVec = applyVisitPraiseToPreference(nextVec, payload.praiseTags)
+        }
+        const next: PersistedMvpStateV1 = {
+          ...prev,
+          preferenceVector: nextVec,
+          venueFeedbackHistory: [
+            ...prev.venueFeedbackHistory,
+            {
+              venueId: payload.venueId,
+              at: Date.now(),
+              outcome: payload.outcome,
+              reasons: payload.reasons,
+              praiseTags: payload.praiseTags,
+              quiz,
+            },
+          ].slice(-120),
+        }
+        saveMvpPersist(next)
+        trackMvp('mvp_profile_updated', {
+          venueId: payload.venueId,
+          outcome: payload.outcome,
+        })
+        return next
+      })
+    },
+    [quiz],
+  )
+
+  const onSwipeComplete = useCallback(
+    (records: { tags: TasteTag[]; action: SwipeAction }[]) => {
+      setSwipeRecords(records)
+      setPersisted((prev) => {
+        const next = applySwipeSessionToPersist(prev, records)
+        saveMvpPersist(next)
+        if (isColdStartComplete(next.coldStartSwipeCount)) {
+          trackMvp('mvp_cold_start_complete', {
+            total: next.coldStartSwipeCount,
+          })
+        }
+        return next
+      })
+      setStep('quiz')
+    },
+    [],
+  )
+
+  const onSkipToQuiz = useCallback(() => {
+    trackMvp('mvp_cold_start_skip', {
+      coldStartSwipeCount: persisted.coldStartSwipeCount,
+    })
+    setSwipeRecords([])
+    setStep('quiz')
+  }, [persisted.coldStartSwipeCount])
+
+  const rerankRecoRemaining = useCallback(
+    (
+      remaining: Recommendation[],
+      recoSession: { tags: TasteTag[]; action: SwipeAction }[],
+    ) => {
+      if (!isQuizComplete(quiz)) return remaining
+      const p = loadMvpPersist()
+      return rerankRecommendationListByRecoSwipe(
+        remaining,
+        recoSession,
+        swipeRecords,
+        quiz,
+        {
+          longTermPreference: p.preferenceVector,
+          sessionBlendWeight: swipeRecords.length > 0 ? 0 : undefined,
+          bookmarkVenueIds: p.bookmarks.map((b) => b.venueId),
+        },
+      )
+    },
+    [quiz, swipeRecords],
+  )
 
   const handleQuizSubmit = useCallback(() => {
     if (!isQuizComplete(quiz) || recoLoading) return
 
+    const p = loadMvpPersist()
+    const sessionBlendWeight = swipeRecords.length > 0 ? 0 : undefined
+    const opts = {
+      longTermPreference: p.preferenceVector,
+      sessionBlendWeight,
+      bookmarkVenueIds: p.bookmarks.map((b) => b.venueId),
+    }
+
     void (async () => {
       setRecoLoading(true)
       trackMvp('mvp_quiz_done', { quiz })
+
+      const apiSwipe = effectiveSwipeRecordsForApi(
+        swipeRecords,
+        p.preferenceVector,
+      )
 
       let shouldShowResults = false
       try {
@@ -83,17 +347,22 @@ export function MvpApp() {
         const timer = window.setTimeout(() => ctrl.abort(), 90_000)
         try {
           const fromApi = await fetchMiMoRecommendations({
-            swipeRecords,
+            swipeRecords: apiSwipe,
             quiz,
             venues: VENUE_POOL,
+            longTermPreference: p.preferenceVector,
             signal: ctrl.signal,
           })
           if (!mountedRef.current) {
-            /* 组件已卸载，不再写状态 */
+            /* 卸载 */
           } else if (fromApi?.length === 3) {
-            setRecommendations(fromApi)
+            const deck = augmentMimoToRecoDeck(fromApi, swipeRecords, quiz, opts)
+            setRecommendations(deck)
             setRecoSource('mimo')
-            trackMvp('mvp_recommend_source', { source: 'mimo' })
+            trackMvp('mvp_recommend_source', {
+              source: 'mimo',
+              deckSize: deck.length,
+            })
             shouldShowResults = true
           } else {
             throw new Error('mimo_fallback')
@@ -104,27 +373,41 @@ export function MvpApp() {
         }
       } catch {
         if (mountedRef.current) {
-          const rules = recommendTop3(swipeRecords, quiz)
-          setRecommendations(rules)
+          const deck = recommendDeck8(swipeRecords, quiz, opts)
+          setRecommendations(deck)
           setRecoSource('rules')
-          trackMvp('mvp_recommend_source', { source: 'rules' })
+          trackMvp('mvp_recommend_source', {
+            source: 'rules',
+            deckSize: deck.length,
+          })
           shouldShowResults = true
         }
       }
       if (mountedRef.current) {
         setRecoLoading(false)
-        if (shouldShowResults) setStep('results')
+        if (shouldShowResults) {
+          setMainTab('discover')
+          setStep('results')
+        }
       }
     })()
   }, [quiz, recoLoading, swipeRecords])
 
+  const showDetail =
+    detailRecommendation &&
+    (step === 'results' || step === 'reco-swipe') &&
+    resultDetailId
+
+  const headerRestartVisible =
+    mainTab === 'discover' && step !== 'swipe' && !showDetail && step !== 'visit-feedback'
+
   return (
-    <div className="mx-auto flex min-h-svh w-full max-w-[430px] flex-col bg-surface-bg pb-10 pt-4">
-      <header className="mb-4 flex items-center justify-between px-page-h">
+    <div className="mx-auto flex min-h-svh w-full max-w-[430px] flex-col bg-surface-bg">
+      <header className="flex shrink-0 items-center justify-between px-page-h pb-2 pt-4">
         <span className="text-caption font-medium text-brand-purple-deep">
-          拍了拍 MVP
+          拍了拍 · PRD
         </span>
-        {step !== 'swipe' && (
+        {headerRestartVisible ? (
           <button
             type="button"
             onClick={restart}
@@ -132,72 +415,183 @@ export function MvpApp() {
           >
             重新开始
           </button>
+        ) : (
+          <span className="w-14" aria-hidden />
         )}
       </header>
 
-      <div className="flex flex-1 flex-col px-page-h">
-        {step === 'swipe' && (
-          <SwipeStep
-            onComplete={(records) => {
-              setSwipeRecords(records)
-              setStep('quiz')
+      <div className="flex min-h-0 flex-1 flex-col px-page-h">
+        {mainTab === 'profile' && <TasteProfileView state={persisted} />}
+
+        {mainTab === 'bookmarks' && (
+          <BookmarksView
+            bookmarks={persisted.bookmarks}
+            venuesById={venuesById}
+            onRemove={(venueId) => {
+              setPersisted((prev) => {
+                const next = {
+                  ...prev,
+                  bookmarks: prev.bookmarks.filter((b) => b.venueId !== venueId),
+                }
+                saveMvpPersist(next)
+                trackMvp('mvp_bookmark_remove', { venueId })
+                return next
+              })
             }}
           />
         )}
 
-        {step === 'quiz' && (
-          <QuizStep
-            quiz={quiz}
-            onQuizChange={setQuiz}
-            pending={recoLoading}
-            onSubmit={handleQuizSubmit}
-          />
-        )}
+        {mainTab === 'discover' && (
+          <>
+            {step === 'swipe' && (
+              <SwipeStep
+                priorSwipeCount={persisted.coldStartSwipeCount}
+                canSkipUsingProfile={canSkipSwipe}
+                onSkipToQuiz={onSkipToQuiz}
+                onComplete={onSwipeComplete}
+              />
+            )}
 
-        {step === 'results' && recommendations && (
-          <ResultsStep
-            items={recommendations}
-            recoSource={recoSource === 'mimo' ? 'mimo' : 'rules'}
-            onNext={() => setStep('feedback')}
-          />
-        )}
+            {step === 'quiz' && (
+              <QuizStep
+                quiz={quiz}
+                onQuizChange={setQuiz}
+                pending={recoLoading}
+                onSubmit={handleQuizSubmit}
+              />
+            )}
 
-        {step === 'feedback' && (
-          <FeedbackStep
-            onSubmit={() => {
-              setStep('survey')
-            }}
-          />
-        )}
+            {step === 'visit-feedback' &&
+              visitFeedbackTarget &&
+              isQuizComplete(quiz) && (
+                <VisitFeedbackStep
+                  item={visitFeedbackTarget}
+                  quiz={quiz}
+                  onBack={() => {
+                    setVisitFeedbackTarget(null)
+                    setStep(postVisitFeedbackStepRef.current)
+                  }}
+                  onSubmit={(payload) => {
+                    trackMvp('mvp_visit_feedback_submit', {
+                      venueId: visitFeedbackTarget.venue.id,
+                      outcome: payload.outcome,
+                    })
+                    onVenueFeedback({
+                      venueId: visitFeedbackTarget.venue.id,
+                      venueTags: visitFeedbackTarget.venue.tags,
+                      outcome: payload.outcome,
+                      reasons: payload.reasons,
+                      praiseTags: payload.praiseTags,
+                    })
+                    setVisitFeedbackTarget(null)
+                    setStep('feedback')
+                  }}
+                />
+              )}
 
-        {step === 'survey' && (
-          <SurveyPromptStep onFinish={() => setStep('done')} />
-        )}
+            {showDetail && isQuizComplete(quiz) && (
+              <VenueDetailSheet
+                item={detailRecommendation}
+                quiz={quiz}
+                recoSource={recoSource === 'mimo' ? 'mimo' : 'rules'}
+                bookmarked={bookmarkedIds.has(detailRecommendation.venue.id)}
+                onBack={() => setResultDetailId(null)}
+                onToggleBookmark={() =>
+                  onToggleBookmark(detailRecommendation.venue.id)
+                }
+                onDecideHere={() => {
+                  if (!bookmarkedIds.has(detailRecommendation.venue.id)) {
+                    onToggleBookmark(detailRecommendation.venue.id)
+                  }
+                  postVisitFeedbackStepRef.current = step
+                  setVisitFeedbackTarget(detailRecommendation)
+                  setResultDetailId(null)
+                  setStep('visit-feedback')
+                }}
+              />
+            )}
 
-        {step === 'done' && (
-          <div className="flex flex-1 flex-col items-center justify-center gap-section pb-24 text-center">
-            <div className="rounded-[24px] bg-brand-purple-light p-8">
-              <span className="text-title-section text-brand-purple-darkest">
-                谢谢反馈
-              </span>
-              <p className="mt-3 text-caption leading-[1.6] text-text-secondary">
-                若你已填写腾讯问卷，非常感谢。产品内埋点见控制台事件
-                <code className="mx-1 rounded-badge bg-brand-purple-light px-1 text-brand-purple-deep">
-                  mvp-analytics
-                </code>
-                ；可随时「重新开始」再跑一遍。
-              </p>
-              <button
-                type="button"
-                className="mt-6 w-full rounded-block bg-brand-purple py-3 text-body font-medium text-white"
-                onClick={restart}
-              >
-                再来一轮
-              </button>
-            </div>
-          </div>
+            {!showDetail &&
+              step === 'results' &&
+              recommendations &&
+              isQuizComplete(quiz) && (
+                <ResultsStep
+                  items={recommendations}
+                  quiz={quiz}
+                  recoSource={recoSource === 'mimo' ? 'mimo' : 'rules'}
+                  onNext={() => setStep('feedback')}
+                  onEnterRecoSwipe={() => {
+                    setRecoSwipeMountKey((k) => k + 1)
+                    setStep('reco-swipe')
+                  }}
+                  onOpenVenue={setResultDetailId}
+                />
+              )}
+
+            {!showDetail &&
+              step === 'reco-swipe' &&
+              recommendations &&
+              isQuizComplete(quiz) && (
+                <RecoSwipeStep
+                  key={recoSwipeMountKey}
+                  initialDeck={recommendations}
+                  quiz={quiz}
+                  rerankRemaining={rerankRecoRemaining}
+                  onBack={() => setStep('results')}
+                  onOpenDetail={setResultDetailId}
+                  onBookmarkVenue={bookmarkVenueEnsure}
+                  onComplete={() => setStep('results')}
+                />
+              )}
+
+            {step === 'feedback' && (
+              <FeedbackStep
+                onSubmit={(value: FeedbackValue) => {
+                  setPersisted((prev) => {
+                    const bumped = bumpOverallFeedback(prev, value)
+                    const next = {
+                      ...bumped,
+                      completedFlows: bumped.completedFlows + 1,
+                    }
+                    saveMvpPersist(next)
+                    return next
+                  })
+                  trackMvp('mvp_flow_complete', {})
+                  setStep('survey')
+                }}
+              />
+            )}
+
+            {step === 'survey' && (
+              <SurveyPromptStep onFinish={() => setStep('done')} />
+            )}
+
+            {step === 'done' && (
+              <div className="flex flex-1 flex-col items-center justify-center gap-section py-8 text-center">
+                <div className="w-full rounded-[24px] bg-brand-purple-light p-8">
+                  <span className="text-title-section text-brand-purple-darkest">
+                    谢谢反馈
+                  </span>
+                  <p className="mt-3 text-caption leading-[1.6] text-text-secondary">
+                    口味与出行反馈已保存。可在「我的」查看画像，在「收藏」管理想去的地方。
+                  </p>
+                  <button
+                    type="button"
+                    className="mt-6 w-full rounded-block bg-brand-purple py-3 text-body font-medium text-white"
+                    onClick={restart}
+                  >
+                    再来一轮
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
+
+      {showTabBar ? (
+        <PrototypeTabBar active={mainTab} onChange={setMainTab} />
+      ) : null}
     </div>
   )
 }

@@ -1,6 +1,7 @@
 import type { CSSProperties } from 'react'
 import { useCallback, useRef, useState } from 'react'
 import { IconBookmark, IconHeartFilled, IconX } from '@tabler/icons-react'
+import { COLD_START_TARGET } from '../coldStart'
 import { SWIPE_DECK } from '../mockData'
 import type { SwipeAction, SwipeCardModel, TasteTag } from '../types'
 import { Chip } from './Chip'
@@ -37,7 +38,7 @@ function SwipeCardFrame({
       >
         <PlaceIcon name={model.iconName} className={iconToneFg[model.iconTone]} />
         <span className="absolute left-[10px] top-[10px] rounded-badge bg-white px-2 py-1 text-hint font-medium text-teal-deep">
-          先试口味
+          口味测试
         </span>
       </div>
       <div className="flex flex-1 flex-col gap-[6px] p-[10px_12px] pb-3">
@@ -59,8 +60,15 @@ function SwipeCardFrame({
 
 export function SwipeStep({
   onComplete,
+  priorSwipeCount = 0,
+  canSkipUsingProfile = false,
+  onSkipToQuiz,
 }: {
   onComplete: (records: { tags: TasteTag[]; action: SwipeAction }[]) => void
+  /** 历史累计滑卡次数（用于文案） */
+  priorSwipeCount?: number
+  canSkipUsingProfile?: boolean
+  onSkipToQuiz?: () => void
 }) {
   const total = SWIPE_DECK.length
   const [index, setIndex] = useState(0)
@@ -73,6 +81,7 @@ export function SwipeStep({
   const drag = useRef({ active: false, startX: 0, startY: 0 })
 
   const current = SWIPE_DECK[index]
+  const lifetimeDone = priorSwipeCount >= COLD_START_TARGET
 
   const finalize = useCallback(
     (action: SwipeAction) => {
@@ -82,13 +91,16 @@ export function SwipeStep({
       setDx(0)
       setDy(0)
       if (index + 1 >= total) {
-        trackMvp('mvp_swipe_done', { count: next.length })
+        trackMvp('mvp_swipe_done', {
+          count: next.length,
+          lifetimePrior: priorSwipeCount,
+        })
         onComplete(next)
       } else {
         setIndex((i) => i + 1)
       }
     },
-    [current, index, onComplete, records, total],
+    [current, index, onComplete, priorSwipeCount, records, total],
   )
 
   const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
@@ -126,9 +138,28 @@ export function SwipeStep({
           </span>
           右滑 · 不喜左滑 · 收藏上滑
         </h2>
+        <p className="mt-2 text-hint leading-[1.45] text-text-tertiary">
+          {lifetimeDone
+            ? '口味档案已建立，本轮滑卡会微调推荐。'
+            : `滑满 ${COLD_START_TARGET} 张后推荐更准（环境 · 价格 · 类型 · 社交）。`}
+        </p>
         <div className="mt-3">
           <MvpProgressBar current={records.length} total={total} />
+          {!lifetimeDone && priorSwipeCount > 0 ? (
+            <p className="mt-1.5 text-hint text-text-tertiary">
+              历史已累计 {priorSwipeCount} 次滑卡信号
+            </p>
+          ) : null}
         </div>
+        {canSkipUsingProfile && onSkipToQuiz ? (
+          <button
+            type="button"
+            onClick={onSkipToQuiz}
+            className="mt-3 w-full rounded-block border border-brand-purple bg-brand-purple-light py-2.5 text-caption font-medium text-brand-purple-deep"
+          >
+            跳过 · 使用已有口味档案
+          </button>
+        ) : null}
       </div>
 
       <div className="relative min-h-[280px] flex-1 pb-2">

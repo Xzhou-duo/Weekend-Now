@@ -52,6 +52,7 @@ export async function fetchMiMoRecommendations(params: {
   swipeRecords: { tags: TasteTag[]; action: SwipeAction }[]
   quiz: Required<QuizAnswers>
   venues: Venue[]
+  longTermPreference?: Record<TasteTag, number>
   signal?: AbortSignal
 }): Promise<Recommendation[] | null> {
   const res = await fetch(recommendUrl(), {
@@ -62,6 +63,7 @@ export async function fetchMiMoRecommendations(params: {
       swipeRecords: params.swipeRecords,
       quiz: params.quiz,
       venues: params.venues,
+      longTermPreference: params.longTermPreference,
     }),
   })
 
