@@ -37,6 +37,7 @@ export default {
         'surface-bg': '#F7F7FB',
         'surface-card': '#FFFFFF',
         'border-card': '#EEEDFE',
+        'brand-purple-accent': '#AFA9EC',
         // §2.6 Icon block backgrounds (bg + fg pairs — fg as separate utilities)
         'icon-block-natural': '#9FE1CB',
         'icon-block-literate': '#CECBF6',

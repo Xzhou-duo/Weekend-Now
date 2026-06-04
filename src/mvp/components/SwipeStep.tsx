@@ -184,7 +184,7 @@ export function SwipeStep({
         </div>
       </div>
 
-      <div className="flex shrink-0 items-center justify-center gap-[14px] px-0 py-2 pb-3">
+      <div className="flex shrink-0 items-center justify-center gap-[14px] bg-surface-bg px-page-h pb-3 pt-2">
         <button
           type="button"
           aria-label="不喜欢"

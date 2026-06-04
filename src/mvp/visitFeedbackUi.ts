@@ -26,10 +26,12 @@ export const GOOD_REASON_OPTIONS: { value: VisitReasonTag; label: string }[] = [
 ]
 
 /** figma 页面07：满意点多选标签 */
+/** design-system §7 Page 07 满意点预置 */
 export const PRAISE_OPTIONS: { value: VisitPraiseTag; label: string }[] = [
   { value: 'quiet_env', label: '环境安静' },
   { value: 'worth_price', label: '性价比高' },
   { value: 'good_food', label: '菜品好吃' },
   { value: 'nice_vibe', label: '服务好' },
   { value: 'would_return', label: '交通方便' },
+  { value: 'solo_friendly', label: '适合独处' },
 ]

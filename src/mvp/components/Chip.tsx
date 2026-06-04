@@ -16,7 +16,7 @@ export function Chip({
 }) {
   return (
     <span
-      className={`inline-block rounded-chip px-chip-h py-chip-v text-hint font-medium ${variantClass[variant]}`}
+      className={`inline-block rounded-chip px-chip-h py-chip-v text-chip-label ${variantClass[variant]}`}
     >
       {children}
     </span>

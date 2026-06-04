@@ -78,6 +78,7 @@ export function applyVisitPraiseToPreference(
     if (p === 'nice_vibe') bump('design', 0.24)
     if (p === 'worth_price') bump('budget', 0.18)
     if (p === 'would_return') bump('neighbor', 0.15)
+    if (p === 'solo_friendly') bump('solo', 0.22)
   }
   return out
 }

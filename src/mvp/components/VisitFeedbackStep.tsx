@@ -12,7 +12,12 @@ import type {
   VisitPraiseTag,
   VisitReasonTag,
 } from '../types'
-import { purpleHeader } from '../figmaUi'
+import {
+  btnPurplePrimary,
+  feedbackTagOff,
+  feedbackTagOn,
+  purpleHeader,
+} from '../figmaUi'
 import {
   BAD_REASON_OPTIONS,
   GOOD_REASON_OPTIONS,
@@ -37,22 +42,30 @@ const toneFg = {
 
 const OUTCOME_STYLE: Record<
   VisitOutcome,
-  { active: string; icon: typeof IconMoodHappy; iconColor: string }
+  {
+    active: string
+    icon: typeof IconMoodHappy
+    iconColor: string
+    labelOn: string
+  }
 > = {
   good: {
     active: 'border-teal bg-teal-light',
     icon: IconMoodHappy,
     iconColor: 'text-teal',
+    labelOn: 'text-teal-deep',
   },
   ok: {
     active: 'border-amber bg-amber-light',
     icon: IconMoodNeutral,
     iconColor: 'text-amber',
+    labelOn: 'text-amber-deep',
   },
   bad: {
     active: 'border-danger-border bg-danger-light',
     icon: IconMoodSad,
     iconColor: 'text-danger-border',
+    labelOn: 'text-danger',
   },
 }
 
@@ -166,7 +179,7 @@ export function VisitFeedbackStep({
                     stroke={1.8}
                   />
                   <span
-                    className={`text-caption ${on ? 'text-text-primary' : 'text-text-secondary'}`}
+                    className={`text-caption ${on ? style.labelOn : 'text-text-secondary'}`}
                   >
                     {opt.label}
                   </span>
@@ -189,11 +202,7 @@ export function VisitFeedbackStep({
                     key={opt.value}
                     type="button"
                     onClick={() => togglePraise(opt.value)}
-                    className={
-                      on
-                        ? 'rounded-chip border border-[#AFA9EC] bg-brand-purple-light px-[10px] py-[5px] text-caption text-brand-purple-deep'
-                        : 'rounded-chip border border-border-card bg-surface-bg px-[10px] py-[5px] text-caption text-text-secondary'
-                    }
+                    className={on ? feedbackTagOn : feedbackTagOff}
                   >
                     {opt.label}
                   </button>
@@ -216,11 +225,7 @@ export function VisitFeedbackStep({
                     key={opt.value}
                     type="button"
                     onClick={() => toggleReason(opt.value)}
-                    className={
-                      on
-                        ? 'rounded-chip border border-[#AFA9EC] bg-brand-purple-light px-[10px] py-[5px] text-caption text-brand-purple-deep'
-                        : 'rounded-chip border border-border-card bg-surface-bg px-[10px] py-[5px] text-caption text-text-secondary'
-                    }
+                    className={on ? feedbackTagOn : feedbackTagOff}
                   >
                     {opt.label}
                   </button>
@@ -230,7 +235,9 @@ export function VisitFeedbackStep({
           </section>
         ) : null}
 
-        <AiReasonBox title="AI 正在更新你的画像">{aiNote}</AiReasonBox>
+        <AiReasonBox title="AI 正在更新你的画像" icon="refresh">
+          {aiNote}
+        </AiReasonBox>
       </div>
 
       <button
@@ -244,7 +251,7 @@ export function VisitFeedbackStep({
             praiseTags: outcome === 'good' ? praise : undefined,
           })
         }}
-        className="mb-4 shrink-0 rounded-block bg-brand-purple py-3 text-body font-medium text-white disabled:opacity-40"
+        className={`${btnPurplePrimary} mb-4 shrink-0 disabled:opacity-40`}
       >
         提交反馈，让推荐更懂你
       </button>

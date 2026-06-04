@@ -2,6 +2,8 @@ import { IconSparkles } from '@tabler/icons-react'
 import { COLD_START_TARGET } from '../coldStart'
 import type { QuizAnswers, Recommendation } from '../types'
 import {
+  btnPurplePrimary,
+  btnSecondary,
   filterChipOff,
   filterChipOn,
   matchBadgeExplore,
@@ -86,7 +88,7 @@ export function ResultsEmptyStep({
       </div>
 
       <div className="-mx-page-h shrink-0 bg-surface-card px-page-h py-1.5">
-        <div className="flex flex-wrap gap-1.5 opacity-50 pointer-events-none">
+        <div className="flex flex-wrap gap-[5px] opacity-50 pointer-events-none">
           {FILTER_LABELS.map((label, i) => (
             <span
               key={label}
@@ -135,15 +137,11 @@ export function ResultsEmptyStep({
           <button
             type="button"
             onClick={onContinueSwipe}
-            className="w-full rounded-block bg-brand-purple py-[11px] text-body font-medium text-white"
+            className={btnPurplePrimary}
           >
             继续滑卡，完善口味
           </button>
-          <button
-            type="button"
-            onClick={onBrowseAnyway}
-            className="w-full rounded-block border-[1.5px] border-border-card bg-surface-card py-[10px] text-body-sm text-text-secondary"
-          >
+          <button type="button" onClick={onBrowseAnyway} className={btnSecondary}>
             先看看大家都在去哪
           </button>
         </div>

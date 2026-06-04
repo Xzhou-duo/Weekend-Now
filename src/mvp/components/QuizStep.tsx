@@ -39,7 +39,7 @@ export function QuizStep({
         </p>
       </header>
 
-      <div className="flex min-h-0 flex-1 flex-col gap-element overflow-y-auto py-3">
+      <div className="flex min-h-0 flex-1 flex-col gap-section overflow-y-auto py-3">
         {QUIZ_COPY.map((block) => (
           <section
             key={block.key}

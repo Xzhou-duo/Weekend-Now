@@ -42,6 +42,7 @@ export const colors = {
   },
   border: {
     card: '#EEEDFE',
+    purpleAccent: '#AFA9EC',
   },
   iconBlock: {
     natural: { bg: '#9FE1CB', fg: '#085041' },

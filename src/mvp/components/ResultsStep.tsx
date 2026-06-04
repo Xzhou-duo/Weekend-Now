@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import type { QuizAnswers, Recommendation } from '../types'
 import {
+  btnPurplePrimary,
   filterChipOff,
   filterChipOn,
   matchBadgeExplore,
@@ -80,7 +81,7 @@ export function ResultsStep({
       </div>
 
       <div className="-mx-page-h shrink-0 bg-surface-card px-page-h py-1.5">
-        <div className="flex flex-wrap gap-1.5">
+        <div className="flex flex-wrap gap-[5px]">
           {FILTER_CHIPS.map((chip) => (
             <button
               key={chip.id}
@@ -165,7 +166,7 @@ export function ResultsStep({
         <button
           type="button"
           onClick={() => onNext()}
-          className="w-full rounded-block bg-brand-purple py-3 text-body font-medium text-white"
+          className={btnPurplePrimary}
         >
           看完了 · 给个整体反馈
         </button>

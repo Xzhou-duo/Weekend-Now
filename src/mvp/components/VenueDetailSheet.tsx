@@ -77,11 +77,11 @@ export function VenueDetailSheet({
         <h2 className="text-title-section text-text-primary">{venue.name}</h2>
         <div className="flex flex-wrap gap-2.5">
           <span className="flex items-center gap-1 text-caption text-text-secondary">
-            <IconMapPin size={12} aria-hidden />
+            <IconMapPin size={10} aria-hidden />
             {meta || venue.categoryLine}
           </span>
           <span className="flex items-center gap-1 text-caption text-text-secondary">
-            <IconCoin size={12} aria-hidden />
+            <IconCoin size={10} aria-hidden />
             {venue.tags.includes('budget')
               ? '亲民'
               : venue.tags.includes('premium')
@@ -90,7 +90,7 @@ export function VenueDetailSheet({
           </span>
         </div>
         <div className="flex items-center gap-1 text-caption text-text-secondary">
-          <IconClock size={12} aria-hidden />
+          <IconClock size={10} aria-hidden />
           营业中 · 11:00-22:00
         </div>
         <AiReasonBox>{item.reason}</AiReasonBox>
@@ -100,14 +100,14 @@ export function VenueDetailSheet({
         <button
           type="button"
           onClick={onBack}
-          className="flex-1 rounded-block border-[1.5px] border-border-card bg-surface-card py-[10px] text-[11px] text-text-secondary"
+          className="flex-1 rounded-block border-[1.5px] border-border-card bg-surface-card py-[11px] text-body-sm text-text-secondary"
         >
           不感兴趣
         </button>
         <button
           type="button"
           onClick={onDecideHere}
-          className="flex-[2] rounded-block bg-brand-purple py-[10px] text-[11px] font-medium text-white"
+          className="flex-[2] rounded-block bg-brand-purple py-3 text-body font-medium text-white"
         >
           就决定这里了
         </button>

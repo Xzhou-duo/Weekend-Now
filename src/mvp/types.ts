@@ -108,6 +108,7 @@ export type VisitPraiseTag =
   | 'nice_vibe'
   | 'worth_price'
   | 'would_return'
+  | 'solo_friendly'
 
 export interface BookmarkEntry {
   venueId: string

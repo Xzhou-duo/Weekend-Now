@@ -70,7 +70,7 @@ export function TasteProfileView({ state }: { state: PersistedMvpStateV1 }) {
               <p className="mt-0.5 text-[11px] font-medium text-text-primary">
                 {top ? tagLabel(top) : '待学习'}
               </p>
-              <div className="mt-1.5 h-1 overflow-hidden rounded-sm bg-brand-purple-light">
+              <div className="mt-1.5 h-[4px] overflow-hidden rounded-sm bg-brand-purple-light">
                 <div
                   className={`h-full rounded-sm ${bar}`}
                   style={{ width: `${pct}%` }}
