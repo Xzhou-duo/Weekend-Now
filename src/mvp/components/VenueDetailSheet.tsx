@@ -1,10 +1,4 @@
-import {
-  IconArrowLeft,
-  IconBookmark,
-  IconClock,
-  IconCoin,
-  IconMapPin,
-} from '@tabler/icons-react'
+import { IconArrowLeft, IconBookmark } from '@tabler/icons-react'
 import type { QuizAnswers, Recommendation } from '../types'
 import { AiReasonBox } from './AiReasonBox'
 import { PlaceIcon } from './PlaceIcon'
@@ -40,88 +34,79 @@ export function VenueDetailSheet({
   onDecideHere: () => void
 }) {
   const { venue } = item
-  const meta = venueMetaLine(venue, quiz)
 
   return (
-    <div className="-mx-page-h flex min-h-0 flex-1 flex-col overflow-hidden bg-surface-bg">
-      <div
-        className={`relative flex h-[112px] shrink-0 items-center justify-center ${toneBg[venue.iconTone]}`}
-      >
-        <PlaceIcon
-          name={venue.iconName}
-          size={40}
-          className={`opacity-90 ${toneFg[venue.iconTone]}`}
-        />
+    <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-card-main bg-surface-card">
+      <div className="flex items-center gap-2 border-b border-border-card px-3 py-3">
         <button
           type="button"
           aria-label="返回"
           onClick={onBack}
-          className="absolute left-3 top-2.5 flex h-[30px] w-[30px] items-center justify-center rounded-full bg-surface-card shadow-card"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-purple-light text-brand-purple-deep"
         >
-          <IconArrowLeft size={14} stroke={2} className="text-text-primary" />
+          <IconArrowLeft size={18} stroke={2} />
         </button>
+        <span className="flex-1 text-caption font-medium text-text-primary">
+          详情
+        </span>
         <button
           type="button"
           aria-label={bookmarked ? '取消收藏' : '收藏'}
           onClick={onToggleBookmark}
-          className={`absolute right-3 top-2.5 flex h-[30px] w-[30px] items-center justify-center rounded-full bg-surface-card shadow-card ${
-            bookmarked ? 'text-amber-collect' : 'text-brand-purple'
+          className={`flex h-9 w-9 items-center justify-center rounded-full ${
+            bookmarked ? 'bg-amber-light text-amber-collect' : 'bg-surface-bg text-text-secondary'
           }`}
         >
-          <IconBookmark size={14} stroke={2} />
+          <IconBookmark size={18} stroke={2} />
         </button>
       </div>
 
-      <div className="-mt-3 flex min-h-0 flex-1 flex-col overflow-hidden px-page-h">
-        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto rounded-t-[16px] bg-surface-card pt-3">
-          <h2 className="text-title-section font-semibold text-text-primary">
-            {venue.name}
-          </h2>
-          <div className="mt-2 flex flex-wrap gap-1.5">
-            <span className="flex items-center gap-1 rounded-badge bg-surface-bg px-2 py-1 text-hint text-text-secondary">
-              <IconMapPin size={11} aria-hidden />
-              {meta || venue.categoryLine}
-            </span>
-            {item.explore ? (
-              <span className="rounded-badge bg-amber-light px-2 py-1 text-hint font-medium text-amber-deep">
-                探索推荐
-              </span>
-            ) : (
-              <span className="flex items-center gap-1 rounded-badge bg-surface-bg px-2 py-1 text-hint text-text-secondary">
-                <IconCoin size={11} aria-hidden />
-                匹配 {item.scorePercent ?? '—'}%
-              </span>
-            )}
-            <span className="flex items-center gap-1 rounded-badge bg-surface-bg px-2 py-1 text-hint text-text-secondary">
-              <IconClock size={11} aria-hidden />
-              {venue.categoryLine.split('·')[0]?.trim() ?? '营业中'}
-            </span>
-          </div>
-          <div className="mt-3">
-            <AiReasonBox>{item.reason}</AiReasonBox>
-          </div>
-          <p className="mt-3 text-hint leading-[1.5] text-text-tertiary">
-            {recoSource === 'mimo'
-              ? '推荐语由 MiMo 生成，并结合今日状态与口味档案。'
-              : '推荐语由本地规则生成，已按今日状态优先于历史偏好加权。'}
-          </p>
-        </div>
-      </div>
-
-      <div className="flex shrink-0 gap-2 border-t border-border-card bg-surface-bg px-page-h py-3">
-        <button
-          type="button"
-          onClick={onBack}
-          className="flex-1 rounded-block border-[1.5px] border-border-card bg-surface-card py-[11px] text-caption text-text-secondary"
+      <div className="flex-1 overflow-y-auto px-page-h py-4">
+        <div
+          className={`mx-auto flex h-[88px] w-[88px] items-center justify-center rounded-icon-block ${toneBg[venue.iconTone]}`}
         >
-          不感兴趣
-        </button>
+          <PlaceIcon
+            name={venue.iconName}
+            size={42}
+            className={toneFg[venue.iconTone]}
+          />
+        </div>
+        <h2 className="mt-4 text-title-section text-text-primary">{venue.name}</h2>
+        <p className="mt-1 text-caption text-text-secondary">
+          {venue.categoryLine}
+        </p>
+        <p className="mt-2 text-caption text-text-tertiary">
+          {venueMetaLine(venue, quiz)}
+        </p>
+        {item.explore ? (
+          <span className="mt-3 inline-block rounded-badge bg-amber-light px-2 py-1 text-hint font-medium text-amber-deep">
+            探索推荐 · 换换口味
+          </span>
+        ) : (
+          <span className="mt-3 inline-block rounded-badge bg-teal-light px-2 py-1 text-hint font-medium text-teal-deep">
+            匹配度约 {item.scorePercent ?? '—'}%
+          </span>
+        )}
+        <div className="mt-4">
+          <p className="mb-2 text-caption font-medium text-brand-purple-deep">
+            为什么推荐给你
+          </p>
+          <AiReasonBox>{item.reason}</AiReasonBox>
+        </div>
+        <p className="mt-4 text-hint leading-[1.5] text-text-tertiary">
+          {recoSource === 'mimo'
+            ? '推荐语由 MiMo 生成，并结合今日状态与口味档案。'
+            : '推荐语由本地规则生成，已按今日状态优先于历史偏好加权。'}
+        </p>
+      </div>
+
+      <div className="border-t border-border-card p-3">
         <button
           type="button"
           onClick={onDecideHere}
-          className="flex-[1.6] rounded-block bg-brand-purple py-[11px] text-caption font-semibold text-white shadow-[0_4px_12px_rgba(127,119,221,0.35)]"
+          className="w-full rounded-block bg-brand-purple py-3 text-body font-medium text-white"
         >
-          就决定这里了
+          就去这家 · 回来后反馈
         </button>
       </div>
     </div>
