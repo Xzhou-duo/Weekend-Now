@@ -27,15 +27,17 @@ export function TasteProfileView({ state }: { state: PersistedMvpStateV1 }) {
     .sort((a, b) => b[1] - a[1])[0]
 
   const noteText = topInsight
-    ? coldDone
-      ? '疲惫状态下你更倾向安静场所，周五晚上不推嘈杂环境'
-      : `再滑 ${Math.max(0, COLD_START_TARGET - state.coldStartSwipeCount)} 张卡，推荐会更准。`
+    ? `你比较喜欢「${tagLabel(topInsight[0])}」类场所，已记入推荐偏好。${
+        state.venueFeedbackHistory.length > 0
+          ? `结合 ${state.venueFeedbackHistory.length} 次出行反馈持续优化中。`
+          : ''
+      }`
     : coldDone
       ? '多完成出行反馈，推荐会更贴你。'
-      : '完成滑卡建档后，这里会出现个性化洞察。'
+      : `再滑 ${Math.max(0, COLD_START_TARGET - state.coldStartSwipeCount)} 张卡，推荐会更准。`
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-element overflow-y-auto bg-surface-bg pb-24">
+    <div className="flex min-h-0 flex-1 flex-col gap-element overflow-x-hidden overflow-y-auto bg-surface-bg pb-24">
       <header className={purpleHeader}>
         <div className="flex items-center gap-2.5">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-purple-light">

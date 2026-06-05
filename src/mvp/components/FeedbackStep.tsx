@@ -15,11 +15,11 @@ const HEADER_COPY: Record<
 > = {
   'post-depart': {
     title: '有没有让你心动的地方？',
-    subtitle: '不用真的出门，感受对就行（MVP 验证用）。',
+    subtitle: '有感觉的地方就够了，还没出门没关系。',
   },
   'post-visit': {
     title: '整体感受？',
-    subtitle: '选一个最接近的就行（MVP 验证用）。',
+    subtitle: '选一个最接近的就行，帮推荐越来越懂你。',
   },
 }
 

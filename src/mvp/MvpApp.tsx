@@ -81,6 +81,7 @@ export function MvpApp() {
   const [feedbackMode, setFeedbackMode] =
     useState<FeedbackStepMode>('post-depart')
   const [surveyNudgeVisible, setSurveyNudgeVisible] = useState(false)
+  const [bookmarkDetailId, setBookmarkDetailId] = useState<string | null>(null)
 
   const resultsViewLogged = useRef(false)
   const mountedRef = useRef(true)
@@ -205,6 +206,7 @@ export function MvpApp() {
     setVisitFeedbackTarget(null)
     setBypassColdStartGate(false)
     setSurveyNudgeVisible(false)
+    setBookmarkDetailId(null)
     surveyNudgeScheduledRef.current = false
     if (surveyNudgeTimerRef.current !== null) {
       window.clearTimeout(surveyNudgeTimerRef.current)
@@ -449,7 +451,7 @@ export function MvpApp() {
     step !== 'depart'
 
   return (
-    <div className="mx-auto flex min-h-svh w-full max-w-[430px] flex-col bg-surface-bg">
+    <div className="mx-auto flex min-h-svh w-full max-w-[430px] flex-col overflow-x-hidden bg-surface-bg">
       <header className="flex shrink-0 items-center justify-between px-page-h pb-2 pt-4">
         <span className="text-caption font-medium text-brand-purple-deep">
           拍了拍 · PRD
@@ -467,25 +469,72 @@ export function MvpApp() {
         )}
       </header>
 
-      <div className="flex min-h-0 flex-1 flex-col px-page-h">
+      <div className="flex min-h-0 flex-1 flex-col overflow-x-hidden px-page-h">
         {mainTab === 'profile' && <TasteProfileView state={persisted} />}
 
         {mainTab === 'bookmarks' && (
-          <BookmarksView
-            bookmarks={persisted.bookmarks}
-            venuesById={venuesById}
-            onRemove={(venueId) => {
-              setPersisted((prev) => {
-                const next = {
-                  ...prev,
-                  bookmarks: prev.bookmarks.filter((b) => b.venueId !== venueId),
+          <>
+            {bookmarkDetailId && venuesById.get(bookmarkDetailId) && (
+              <VenueDetailSheet
+                item={{ venue: venuesById.get(bookmarkDetailId)!, reason: '' }}
+                quiz={
+                  (persisted.bookmarks.find((b) => b.venueId === bookmarkDetailId)
+                    ?.quizSnapshot ?? quiz) as Required<QuizAnswers>
                 }
-                saveMvpPersist(next)
-                trackMvp('mvp_bookmark_remove', { venueId })
-                return next
-              })
-            }}
-          />
+                recoSource="rules"
+                bookmarked={bookmarkedIds.has(bookmarkDetailId)}
+                surveyNudgeVisible={false}
+                onBack={() => setBookmarkDetailId(null)}
+                onToggleBookmark={() => onToggleBookmark(bookmarkDetailId)}
+                onDecideHere={() => {
+                  const venue = venuesById.get(bookmarkDetailId)
+                  if (!venue) return
+                  const reco: Recommendation = { venue, reason: '' }
+                  const usedQuiz = (
+                    persisted.bookmarks.find((b) => b.venueId === bookmarkDetailId)
+                      ?.quizSnapshot ?? quiz
+                  ) as Required<QuizAnswers>
+                  setVisitFeedbackTarget(reco)
+                  setBookmarkDetailId(null)
+                  setPersisted((prev) => {
+                    const next = {
+                      ...prev,
+                      pendingFeedback: {
+                        venueId: venue.id,
+                        venueName: venue.name,
+                        quizSnapshot: usedQuiz,
+                        decidedAt: Date.now(),
+                      },
+                    }
+                    saveMvpPersist(next)
+                    return next
+                  })
+                  postVisitFeedbackStepRef.current = 'quiz'
+                  setStep('depart')
+                  setMainTab('discover')
+                }}
+              />
+            )}
+
+            {!bookmarkDetailId && (
+              <BookmarksView
+                bookmarks={persisted.bookmarks}
+                venuesById={venuesById}
+                onSelect={(venueId) => setBookmarkDetailId(venueId)}
+                onRemove={(venueId) => {
+                  setPersisted((prev) => {
+                    const next = {
+                      ...prev,
+                      bookmarks: prev.bookmarks.filter((b) => b.venueId !== venueId),
+                    }
+                    saveMvpPersist(next)
+                    trackMvp('mvp_bookmark_remove', { venueId })
+                    return next
+                  })
+                }}
+              />
+            )}
+          </>
         )}
 
         {mainTab === 'discover' && (
@@ -660,8 +709,7 @@ export function MvpApp() {
                 quiz={quiz}
                 onDone={() => {
                   setVisitFeedbackTarget(null)
-                  setFeedbackMode('post-depart')
-                  setStep('feedback')
+                  restart()
                 }}
               />
             )}

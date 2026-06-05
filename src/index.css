@@ -8,14 +8,14 @@
  */
 @layer base {
   html {
-    @apply antialiased text-text-primary font-sans;
+    @apply antialiased text-text-primary font-sans overflow-x-hidden;
   }
 
   body {
-    @apply m-0 min-h-svh bg-surface-bg text-text-primary;
+    @apply m-0 min-h-svh overflow-x-hidden bg-surface-bg text-text-primary;
   }
 
   #root {
-    @apply min-h-svh;
+    @apply min-h-svh overflow-x-hidden;
   }
 }

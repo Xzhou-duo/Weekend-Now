@@ -27,11 +27,18 @@ export function QuizStep({
 
   const canSubmit = Boolean(quiz.party && quiz.mood && quiz.distance)
 
+  const now = new Date()
+  const DAY_LABELS = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
+  const dayLabel = DAY_LABELS[now.getDay()]
+  const hour = now.getHours()
+  const hourLabel = hour < 12 ? '上午' : hour < 18 ? '下午' : '晚上'
+  const timeLabel = `${dayLabel}${hourLabel}`
+
   return (
     <div className="flex min-h-0 flex-1 flex-col bg-surface-bg">
       <header className={purpleHeader}>
         <span className="inline-block rounded-badge bg-brand-purple-light px-2 py-[3px] text-hint font-medium text-brand-purple-deep">
-          周六早上
+          {timeLabel}
         </span>
         <h2 className="mt-1.5 text-title-section text-white">今天什么感觉？</h2>
         <p className="mt-1 text-caption text-text-on-purple">

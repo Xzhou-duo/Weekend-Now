@@ -68,7 +68,7 @@ export function ResultsStep({
   const preview = filtered.slice(0, 3)
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col bg-surface-bg">
+    <div className="flex min-h-0 flex-1 flex-col overflow-x-hidden bg-surface-bg">
       <div className="-mx-page-h shrink-0 bg-surface-card px-page-h pb-2 pt-3">
         <h2 className="text-title-section text-text-primary">
           为你挑了 {items.length} 个地方
@@ -158,7 +158,7 @@ export function ResultsStep({
           onClick={() => onNext()}
           className={btnPurplePrimary}
         >
-          今天先到这
+          看完了，说说感受 →
         </button>
       </div>
     </div>

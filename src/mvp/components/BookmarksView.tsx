@@ -1,3 +1,4 @@
+import { IconTrash } from '@tabler/icons-react'
 import type { BookmarkEntry, Venue } from '../types'
 import { PlaceIcon } from './PlaceIcon'
 
@@ -13,69 +14,83 @@ const toneFg = {
   bazaar: 'text-amber-deep',
 } as const
 
+function timeLabel(savedAt: number): string {
+  const daysAgo = Math.floor((Date.now() - savedAt) / 86_400_000)
+  if (daysAgo === 0) return '今天存的'
+  if (daysAgo === 1) return '昨天存的'
+  if (daysAgo < 7) return `${daysAgo}天前`
+  if (daysAgo < 30) return `${Math.floor(daysAgo / 7)}周前`
+  return `${Math.floor(daysAgo / 30)}个月前`
+}
+
 export function BookmarksView({
   bookmarks,
   venuesById,
+  onSelect,
   onRemove,
 }: {
   bookmarks: BookmarkEntry[]
   venuesById: Map<string, Venue>
+  onSelect: (venueId: string) => void
   onRemove: (venueId: string) => void
 }) {
-  const sorted = [...bookmarks].sort((a, b) => b.savedAt - a.savedAt)
-
-  if (sorted.length === 0) {
+  if (bookmarks.length === 0) {
     return (
-      <div className="flex flex-1 flex-col items-center justify-center px-page-h py-16 text-center">
-        <p className="text-body font-medium text-text-primary">还没有收藏</p>
-        <p className="mt-2 max-w-[260px] text-caption leading-[1.5] text-text-secondary">
-          在推荐详情或刷卡时上滑收藏，会出现在这里。
+      <div className="flex flex-1 flex-col items-center justify-center gap-3 text-center">
+        <p className="text-body text-text-secondary">还没有收藏</p>
+        <p className="text-caption text-text-tertiary">
+          在推荐结果或详情页上滑 / 点书签即可收藏
         </p>
       </div>
     )
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-element overflow-y-auto pb-24">
-      <header className="pt-2">
-        <h2 className="text-title-section text-text-primary">收藏夹</h2>
-        <p className="mt-1 text-caption text-text-secondary">
-          共 {sorted.length} 个去处
-        </p>
-      </header>
-
+    <div className="flex min-h-0 flex-1 flex-col gap-element overflow-y-auto py-3 pb-24">
+      <p className="text-caption text-text-tertiary">
+        共 {bookmarks.length} 个收藏 · 点击查看详情
+      </p>
       <ul className="flex flex-col gap-element">
-        {sorted.map((b) => {
-          const venue = venuesById.get(b.venueId)
+        {[...bookmarks].reverse().map((entry) => {
+          const venue = venuesById.get(entry.venueId)
           if (!venue) return null
           return (
             <li
-              key={b.venueId}
-              className="flex items-center gap-element rounded-card border border-border-card bg-surface-card p-3 shadow-card"
+              key={entry.venueId}
+              className="flex items-center gap-3 rounded-card bg-surface-card p-[10px]"
             >
-              <div
-                className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-icon-block ${toneBg[venue.iconTone]}`}
-              >
-                <PlaceIcon
-                  name={venue.iconName}
-                  size={24}
-                  className={toneFg[venue.iconTone]}
-                />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-body font-medium text-text-primary">
-                  {venue.name}
-                </p>
-                <p className="text-hint text-text-tertiary">
-                  {venue.categoryLine}
-                </p>
-              </div>
               <button
                 type="button"
-                onClick={() => onRemove(b.venueId)}
-                className="shrink-0 rounded-badge px-2 py-1 text-hint text-danger"
+                className="flex min-w-0 flex-1 items-center gap-3 text-left"
+                onClick={() => onSelect(entry.venueId)}
               >
-                删除
+                <div
+                  className={`flex h-[46px] w-[46px] shrink-0 items-center justify-center rounded-icon-block ${toneBg[venue.iconTone]}`}
+                >
+                  <PlaceIcon
+                    name={venue.iconName}
+                    size={20}
+                    className={toneFg[venue.iconTone]}
+                  />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-[13px] font-medium text-text-primary">
+                    {venue.name}
+                  </p>
+                  <p className="mt-0.5 text-hint text-text-tertiary">
+                    {venue.categoryLine} · {timeLabel(entry.savedAt)}
+                  </p>
+                </div>
+                <span className="shrink-0 text-caption text-text-tertiary">›</span>
+              </button>
+
+              <button
+                type="button"
+                aria-label="删除收藏"
+                onClick={() => onRemove(entry.venueId)}
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-text-tertiary hover:bg-danger-light hover:text-danger"
+              >
+                <IconTrash size={14} stroke={1.8} />
               </button>
             </li>
           )
