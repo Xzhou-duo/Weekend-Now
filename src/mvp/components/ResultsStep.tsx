@@ -6,8 +6,6 @@ import {
   filterChipOn,
   matchBadgeExplore,
   matchBadgeHi,
-  reasonTagPurple,
-  reasonTagTeal,
 } from '../figmaUi'
 import { PlaceIcon } from './PlaceIcon'
 import { trackMvp } from '../analytics'
@@ -124,17 +122,9 @@ export function ResultsStep({
                   <div className="text-[12px] font-medium text-text-primary">
                     {row.venue.name}
                   </div>
-                  <span
-                    className={
-                      row.explore ? reasonTagPurple : reasonTagTeal
-                    }
-                  >
-                    {row.explore
-                      ? '你说想要新鲜感'
-                      : row.reason.length > 18
-                        ? `${row.reason.slice(0, 18)}…`
-                        : row.reason}
-                  </span>
+                  <p className="mt-[3px] text-[11px] leading-[1.5] text-text-secondary line-clamp-2">
+                    {row.explore ? '为你加入一个新鲜探索' : row.reason}
+                  </p>
                   <div className="text-hint text-text-tertiary">
                     {venueMetaLine(row.venue, quiz)}
                   </div>
@@ -168,7 +158,7 @@ export function ResultsStep({
           onClick={() => onNext()}
           className={btnPurplePrimary}
         >
-          看完了 · 给个整体反馈
+          今天先到这
         </button>
       </div>
     </div>

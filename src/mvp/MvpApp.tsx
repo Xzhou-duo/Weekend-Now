@@ -11,7 +11,8 @@ import type {
   VisitReasonTag,
 } from './types'
 import { DEFAULT_QUIZ_SELECTION } from './types'
-import { FeedbackStep } from './components/FeedbackStep'
+import { DepartStep } from './components/DepartStep'
+import { FeedbackStep, type FeedbackStepMode } from './components/FeedbackStep'
 import { SurveyPromptStep } from './components/SurveyPromptStep'
 import { QuizStep } from './components/QuizStep'
 import { ResultsStep } from './components/ResultsStep'
@@ -77,12 +78,17 @@ export function MvpApp() {
   const [visitFeedbackTarget, setVisitFeedbackTarget] =
     useState<Recommendation | null>(null)
   const [bypassColdStartGate, setBypassColdStartGate] = useState(false)
+  const [feedbackMode, setFeedbackMode] =
+    useState<FeedbackStepMode>('post-depart')
+  const [surveyNudgeVisible, setSurveyNudgeVisible] = useState(false)
 
   const resultsViewLogged = useRef(false)
   const mountedRef = useRef(true)
   const submitAbortRef = useRef<AbortController | null>(null)
   const sessionBumpedRef = useRef(false)
   const postVisitFeedbackStepRef = useRef<Step>('results')
+  const surveyNudgeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const surveyNudgeScheduledRef = useRef(false)
 
   const canSkipSwipe = canSkipColdStartSwipe(persisted)
 
@@ -110,6 +116,7 @@ export function MvpApp() {
   const showTabBar =
     mainTab !== 'discover' ||
     (step !== 'visit-feedback' &&
+      step !== 'depart' &&
       !(
         (step === 'results' || step === 'reco-swipe') && resultDetailId !== null
       ))
@@ -119,7 +126,32 @@ export function MvpApp() {
     return () => {
       mountedRef.current = false
       submitAbortRef.current?.abort()
+      if (surveyNudgeTimerRef.current !== null) {
+        window.clearTimeout(surveyNudgeTimerRef.current)
+      }
     }
+  }, [])
+
+  const closeResultDetail = useCallback(() => {
+    setResultDetailId(null)
+    setSurveyNudgeVisible(false)
+    if (surveyNudgeTimerRef.current !== null) {
+      window.clearTimeout(surveyNudgeTimerRef.current)
+      surveyNudgeTimerRef.current = null
+    }
+  }, [])
+
+  const handleOpenResultVenue = useCallback((venueId: string) => {
+    setResultDetailId(venueId)
+    if (surveyNudgeScheduledRef.current) return
+    surveyNudgeScheduledRef.current = true
+    if (surveyNudgeTimerRef.current !== null) {
+      window.clearTimeout(surveyNudgeTimerRef.current)
+    }
+    surveyNudgeTimerRef.current = window.setTimeout(() => {
+      surveyNudgeTimerRef.current = null
+      if (mountedRef.current) setSurveyNudgeVisible(true)
+    }, 3000)
   }, [])
 
   useEffect(() => {
@@ -172,6 +204,12 @@ export function MvpApp() {
     setRecoSwipeMountKey(0)
     setVisitFeedbackTarget(null)
     setBypassColdStartGate(false)
+    setSurveyNudgeVisible(false)
+    surveyNudgeScheduledRef.current = false
+    if (surveyNudgeTimerRef.current !== null) {
+      window.clearTimeout(surveyNudgeTimerRef.current)
+      surveyNudgeTimerRef.current = null
+    }
   }
 
   const bookmarkVenueEnsure = useCallback(
@@ -251,6 +289,7 @@ export function MvpApp() {
         const next: PersistedMvpStateV1 = {
           ...prev,
           preferenceVector: nextVec,
+          pendingFeedback: null,
           venueFeedbackHistory: [
             ...prev.venueFeedbackHistory,
             {
@@ -390,7 +429,8 @@ export function MvpApp() {
         setRecoLoading(false)
         if (shouldShowResults) {
           setMainTab('discover')
-          setStep('results')
+          setRecoSwipeMountKey((k) => k + 1)
+          setStep('reco-swipe')
         }
       }
     })()
@@ -402,7 +442,11 @@ export function MvpApp() {
     resultDetailId
 
   const headerRestartVisible =
-    mainTab === 'discover' && step !== 'swipe' && !showDetail && step !== 'visit-feedback'
+    mainTab === 'discover' &&
+    step !== 'swipe' &&
+    !showDetail &&
+    step !== 'visit-feedback' &&
+    step !== 'depart'
 
   return (
     <div className="mx-auto flex min-h-svh w-full max-w-[430px] flex-col bg-surface-bg">
@@ -456,12 +500,37 @@ export function MvpApp() {
             )}
 
             {step === 'quiz' && (
-              <QuizStep
-                quiz={quiz}
-                onQuizChange={setQuiz}
-                pending={recoLoading}
-                onSubmit={handleQuizSubmit}
-              />
+              <>
+                {persisted.pendingFeedback && (
+                  <button
+                    type="button"
+                    className="mb-3 w-full rounded-block border border-brand-purple bg-brand-purple-light px-4 py-3 text-left"
+                    onClick={() => {
+                      const pf = persisted.pendingFeedback!
+                      const venue = venuesById.get(pf.venueId)
+                      if (!venue) return
+                      const fakeReco: Recommendation = { venue, reason: '' }
+                      setVisitFeedbackTarget(fakeReco)
+                      setQuiz(pf.quizSnapshot)
+                      postVisitFeedbackStepRef.current = 'quiz'
+                      setStep('visit-feedback')
+                    }}
+                  >
+                    <p className="text-caption font-medium text-brand-purple-deep">
+                      上次去了「{persisted.pendingFeedback.venueName}」
+                    </p>
+                    <p className="mt-0.5 text-hint text-text-secondary">
+                      感觉怎么样？点这里告诉我 →
+                    </p>
+                  </button>
+                )}
+                <QuizStep
+                  quiz={quiz}
+                  onQuizChange={setQuiz}
+                  pending={recoLoading}
+                  onSubmit={handleQuizSubmit}
+                />
+              </>
             )}
 
             {step === 'visit-feedback' &&
@@ -487,6 +556,7 @@ export function MvpApp() {
                       praiseTags: payload.praiseTags,
                     })
                     setVisitFeedbackTarget(null)
+                    setFeedbackMode('post-visit')
                     setStep('feedback')
                   }}
                 />
@@ -498,7 +568,9 @@ export function MvpApp() {
                 quiz={quiz}
                 recoSource={recoSource === 'mimo' ? 'mimo' : 'rules'}
                 bookmarked={bookmarkedIds.has(detailRecommendation.venue.id)}
-                onBack={() => setResultDetailId(null)}
+                surveyNudgeVisible={surveyNudgeVisible}
+                onDismissSurveyNudge={() => setSurveyNudgeVisible(false)}
+                onBack={closeResultDetail}
                 onToggleBookmark={() =>
                   onToggleBookmark(detailRecommendation.venue.id)
                 }
@@ -506,10 +578,25 @@ export function MvpApp() {
                   if (!bookmarkedIds.has(detailRecommendation.venue.id)) {
                     onToggleBookmark(detailRecommendation.venue.id)
                   }
+                  if (isQuizComplete(quiz)) {
+                    setPersisted((prev) => {
+                      const next = {
+                        ...prev,
+                        pendingFeedback: {
+                          venueId: detailRecommendation.venue.id,
+                          venueName: detailRecommendation.venue.name,
+                          quizSnapshot: quiz,
+                          decidedAt: Date.now(),
+                        },
+                      }
+                      saveMvpPersist(next)
+                      return next
+                    })
+                  }
                   postVisitFeedbackStepRef.current = step
                   setVisitFeedbackTarget(detailRecommendation)
-                  setResultDetailId(null)
-                  setStep('visit-feedback')
+                  closeResultDetail()
+                  setStep('depart')
                 }}
               />
             )}
@@ -542,12 +629,12 @@ export function MvpApp() {
                   items={recommendations}
                   quiz={quiz}
                   recoSource={recoSource === 'mimo' ? 'mimo' : 'rules'}
-                  onNext={() => setStep('feedback')}
+                  onNext={() => setStep('survey')}
                   onEnterRecoSwipe={() => {
                     setRecoSwipeMountKey((k) => k + 1)
                     setStep('reco-swipe')
                   }}
-                  onOpenVenue={setResultDetailId}
+                  onOpenVenue={handleOpenResultVenue}
                 />
               )}
 
@@ -567,8 +654,21 @@ export function MvpApp() {
                 />
               )}
 
+            {step === 'depart' && visitFeedbackTarget && isQuizComplete(quiz) && (
+              <DepartStep
+                item={visitFeedbackTarget}
+                quiz={quiz}
+                onDone={() => {
+                  setVisitFeedbackTarget(null)
+                  setFeedbackMode('post-depart')
+                  setStep('feedback')
+                }}
+              />
+            )}
+
             {step === 'feedback' && (
               <FeedbackStep
+                mode={feedbackMode}
                 onSubmit={(value: FeedbackValue) => {
                   setPersisted((prev) => {
                     const bumped = bumpOverallFeedback(prev, value)

@@ -1,6 +1,7 @@
 import type {
   BookmarkEntry,
   FeedbackValue,
+  QuizAnswers,
   SwipeAction,
   TasteTag,
   VenueFeedbackRecord,
@@ -12,6 +13,13 @@ const STORAGE_KEY = 'paipaipai-mvp-state-v1'
 
 const SESSION_LEARN_RATE = 0.42
 
+export interface PendingFeedbackEntry {
+  venueId: string
+  venueName: string
+  quizSnapshot: Required<QuizAnswers>
+  decidedAt: number
+}
+
 export interface PersistedMvpStateV1 {
   version: 1
   preferenceVector: Record<TasteTag, number>
@@ -22,6 +30,7 @@ export interface PersistedMvpStateV1 {
   venueFeedbackHistory: VenueFeedbackRecord[]
   completedFlows: number
   overallFeedback: Record<FeedbackValue, number>
+  pendingFeedback: PendingFeedbackEntry | null
 }
 
 function emptyPreference(): Record<TasteTag, number> {
@@ -38,6 +47,7 @@ export function defaultPersistedState(): PersistedMvpStateV1 {
     venueFeedbackHistory: [],
     completedFlows: 0,
     overallFeedback: { helpful: 0, ok: 0, 'not-helpful': 0 },
+    pendingFeedback: null,
   }
 }
 
@@ -73,6 +83,30 @@ function normalizeBookmarks(raw: unknown): BookmarkEntry[] {
     })
   }
   return out
+}
+
+function normalizePendingFeedback(
+  raw: unknown,
+): PendingFeedbackEntry | null {
+  if (!raw || typeof raw !== 'object') return null
+  const r = raw as PendingFeedbackEntry
+  const snap = r.quizSnapshot
+  if (
+    !r.venueId ||
+    !r.venueName ||
+    typeof r.decidedAt !== 'number' ||
+    !snap?.party ||
+    !snap.mood ||
+    !snap.distance
+  ) {
+    return null
+  }
+  return {
+    venueId: String(r.venueId),
+    venueName: String(r.venueName),
+    quizSnapshot: snap,
+    decidedAt: r.decidedAt,
+  }
 }
 
 function normalizeFeedbackHistory(raw: unknown): VenueFeedbackRecord[] {
@@ -126,6 +160,7 @@ export function loadMvpPersist(): PersistedMvpStateV1 {
         ok: Math.max(0, Number(fb.ok) || 0),
         'not-helpful': Math.max(0, Number(fb['not-helpful']) || 0),
       },
+      pendingFeedback: normalizePendingFeedback(parsed.pendingFeedback),
     }
   } catch {
     return defaultPersistedState()

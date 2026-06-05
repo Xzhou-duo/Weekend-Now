@@ -37,6 +37,9 @@ export function QuizStep({
         <p className="mt-1 text-caption text-text-on-purple">
           3个问题，AI帮你定制今日方案
         </p>
+        <p className="mt-1 text-caption text-text-on-purple">
+          已帮你预填，可直接提交 · 或调整后再生成
+        </p>
       </header>
 
       <div className="flex min-h-0 flex-1 flex-col gap-section overflow-y-auto py-3">

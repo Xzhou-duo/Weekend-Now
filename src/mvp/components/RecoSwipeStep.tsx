@@ -27,34 +27,49 @@ const toneFg = {
 
 function RecoCard({
   item,
+  quiz,
   style,
 }: {
   item: Recommendation
+  quiz: Required<QuizAnswers>
   style?: CSSProperties
 }) {
   const { venue } = item
+  const meta = venueMetaLine(venue, quiz)
+
   return (
     <div
-      className="flex h-full flex-col overflow-hidden rounded-card-main border border-border-card bg-surface-card shadow-card"
+      className="flex h-full min-h-[360px] flex-col overflow-hidden rounded-card-main border border-border-card bg-surface-card shadow-card"
       style={style}
     >
       <div
-        className={`relative flex h-[100px] shrink-0 items-center justify-center ${toneBg[venue.iconTone]}`}
+        className={`relative flex h-[128px] shrink-0 flex-col justify-between p-3 ${toneBg[venue.iconTone]}`}
       >
-        <PlaceIcon
-          name={venue.iconName}
-          className={toneFg[venue.iconTone]}
-          size={40}
-        />
-        {item.explore ? (
-          <span className="absolute left-[10px] top-[10px] rounded-[8px] bg-amber-light px-2 py-1 text-[9px] font-medium text-amber-deep">
-            换换口味
+        <div className="flex items-start justify-between gap-2">
+          <span className="rounded-badge bg-amber-light px-2 py-[3px] text-hint font-medium text-amber-deep">
+            {item.explore ? '换换口味' : '今日推荐'}
           </span>
-        ) : (
-          <span className="absolute left-[10px] top-[10px] rounded-[8px] bg-teal-light px-2 py-1 text-[9px] font-medium text-teal-deep">
-            匹配 {item.scorePercent ?? '—'}%
-          </span>
-        )}
+          {!item.explore ? (
+            <span className="rounded-badge bg-teal-light px-2 py-[3px] text-hint font-medium text-teal-deep">
+              匹配 {item.scorePercent ?? '—'}%
+            </span>
+          ) : null}
+        </div>
+        <div className="flex items-end gap-2.5">
+          <div
+            className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-icon-block bg-surface-card/80 ${toneFg[venue.iconTone]}`}
+          >
+            <PlaceIcon name={venue.iconName} className={toneFg[venue.iconTone]} size={24} />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-caption font-medium text-text-primary">
+              {venue.addressLine ?? (meta || venue.categoryLine)}
+            </p>
+            <p className="mt-0.5 text-hint text-text-secondary">
+              {venue.priceNote ?? venue.categoryLine}
+            </p>
+          </div>
+        </div>
       </div>
       <div className="flex flex-1 flex-col gap-2 overflow-y-auto p-3">
         <h3 className="text-title-card text-text-primary">{venue.name}</h3>
@@ -162,12 +177,12 @@ export function RecoSwipeStep({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <div className="mb-2 flex items-center gap-2">
+      <div className="mb-2 flex items-start gap-2">
         <button
           type="button"
           aria-label="返回"
           onClick={onBack}
-          className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-card text-text-secondary"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface-card text-text-secondary"
         >
           <IconArrowLeft size={18} stroke={2} />
         </button>
@@ -177,13 +192,20 @@ export function RecoSwipeStep({
             左滑跳过 · 右滑想去 · 上滑收藏；顺序会随你的反馈调整
           </p>
         </div>
+        <button
+          type="button"
+          onClick={onBack}
+          className="shrink-0 rounded-badge border border-border-card bg-surface-card px-2.5 py-1.5 text-hint font-medium text-brand-purple-deep"
+        >
+          列表视图
+        </button>
       </div>
 
       <MvpProgressBar current={done} total={total} />
 
       <p className="mt-2 text-hint text-text-tertiary">{meta}</p>
 
-      <div className="relative mt-2 min-h-[300px] flex-1">
+      <div className="relative mt-2 min-h-[340px] flex-1">
         <div
           className="touch-none select-none"
           onPointerDown={onPointerDown}
@@ -197,7 +219,7 @@ export function RecoSwipeStep({
               transform: `translate(${dx}px, ${dy}px) rotate(${dx * 0.04}deg)`,
             }}
           >
-            <RecoCard item={current} />
+            <RecoCard item={current} quiz={quiz} />
           </div>
         </div>
       </div>

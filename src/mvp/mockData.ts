@@ -284,6 +284,9 @@ export const VENUE_POOL: Venue[] = [
     iconTone: 'literate',
     iconName: 'plant-2',
     distanceKm: 0.9,
+    openHours: '09:00–21:00',
+    priceNote: '¥32–48/人',
+    addressLine: '徐汇区襄阳南路 298 号',
   },
   {
     id: 'v2',
@@ -293,6 +296,9 @@ export const VENUE_POOL: Venue[] = [
     iconTone: 'bazaar',
     iconName: 'building-store',
     distanceKm: 1.4,
+    openHours: '17:00–23:30',
+    priceNote: '¥18–35/人',
+    addressLine: '黄浦区湖滨路 150 号',
   },
   {
     id: 'v3',
@@ -302,6 +308,9 @@ export const VENUE_POOL: Venue[] = [
     iconTone: 'natural',
     iconName: 'tools-kitchen-2',
     distanceKm: 2.2,
+    openHours: '11:30–22:00',
+    priceNote: '¥68–98/人',
+    addressLine: '静安区巨鹿路 758 号',
   },
   {
     id: 'v4',
@@ -311,6 +320,9 @@ export const VENUE_POOL: Venue[] = [
     iconTone: 'natural',
     iconName: 'building-store',
     distanceKm: 5.8,
+    openHours: '08:00–20:00',
+    priceNote: '免费入场',
+    addressLine: '长宁区虹桥路 1650 号',
   },
   {
     id: 'v5',
@@ -320,6 +332,9 @@ export const VENUE_POOL: Venue[] = [
     iconTone: 'literate',
     iconName: 'plant-2',
     distanceKm: 1.7,
+    openHours: '10:30–21:30',
+    priceNote: '¥50–120/人',
+    addressLine: '长宁区愚园路 1088 号',
   },
   {
     id: 'v6',
@@ -329,6 +344,9 @@ export const VENUE_POOL: Venue[] = [
     iconTone: 'natural',
     iconName: 'tools-kitchen-2',
     distanceKm: 3.4,
+    openHours: '11:00–14:00, 17:00–21:30',
+    priceNote: '¥120–180/人',
+    addressLine: '黄浦区进贤路 198 号',
   },
   {
     id: 'v7',
@@ -338,6 +356,9 @@ export const VENUE_POOL: Venue[] = [
     iconTone: 'bazaar',
     iconName: 'tools-kitchen-2',
     distanceKm: 4.1,
+    openHours: '16:00–02:00',
+    priceNote: '¥55–85/人',
+    addressLine: '杨浦区大学路 248 号',
   },
   {
     id: 'v8',
@@ -347,6 +368,9 @@ export const VENUE_POOL: Venue[] = [
     iconTone: 'bazaar',
     iconName: 'building-store',
     distanceKm: 0.7,
+    openHours: '07:30–19:00',
+    priceNote: '¥22–38/人',
+    addressLine: '长宁区新华路 365 号',
   },
   {
     id: 'v9',
@@ -356,6 +380,9 @@ export const VENUE_POOL: Venue[] = [
     iconTone: 'literate',
     iconName: 'plant-2',
     distanceKm: 6.2,
+    openHours: '10:00–18:00（周一闭馆）',
+    priceNote: '门票 ¥50–100',
+    addressLine: '徐汇区龙腾大道 3398 号',
   },
   {
     id: 'v10',
@@ -365,6 +392,9 @@ export const VENUE_POOL: Venue[] = [
     iconTone: 'natural',
     iconName: 'building-store',
     distanceKm: 8.4,
+    openHours: '11:00–23:00',
+    priceNote: '¥60–90/人',
+    addressLine: '普陀区长寿路 189 号',
   },
   {
     id: 'v11',
@@ -374,6 +404,9 @@ export const VENUE_POOL: Venue[] = [
     iconTone: 'bazaar',
     iconName: 'tools-kitchen-2',
     distanceKm: 1.1,
+    openHours: '12:00–22:00',
+    priceNote: '¥15–28/人',
+    addressLine: '黄浦区陕西南路 52 号',
   },
   {
     id: 'v12',
@@ -383,6 +416,9 @@ export const VENUE_POOL: Venue[] = [
     iconTone: 'literate',
     iconName: 'plant-2',
     distanceKm: 11,
+    openHours: '09:30–21:00',
+    priceNote: '¥35–55/人',
+    addressLine: '徐汇区龙腾大道 2600 号',
   },
   {
     id: 'v13',
@@ -392,6 +428,9 @@ export const VENUE_POOL: Venue[] = [
     iconTone: 'literate',
     iconName: 'tools-kitchen-2',
     distanceKm: 2.5,
+    openHours: '17:30–01:00',
+    priceNote: '¥90–150/人',
+    addressLine: '徐汇区安福路 201 号',
   },
   {
     id: 'v14',
@@ -401,6 +440,9 @@ export const VENUE_POOL: Venue[] = [
     iconTone: 'bazaar',
     iconName: 'building-store',
     distanceKm: 3.1,
+    openHours: '10:00–22:00',
+    priceNote: '¥25–45/人',
+    addressLine: '黄浦区泰康路 210 号',
   },
   {
     id: 'v15',
@@ -410,6 +452,9 @@ export const VENUE_POOL: Venue[] = [
     iconTone: 'literate',
     iconName: 'plant-2',
     distanceKm: 1.3,
+    openHours: '10:00–20:00',
+    priceNote: '¥88–128/人',
+    addressLine: '徐汇区武康路 374 号',
   },
   {
     id: 'v16',
@@ -419,6 +464,9 @@ export const VENUE_POOL: Venue[] = [
     iconTone: 'bazaar',
     iconName: 'tools-kitchen-2',
     distanceKm: 12,
+    openHours: '08:00–20:30',
+    priceNote: '¥12–25/人',
+    addressLine: '闵行区七宝老街南大街 36 号',
   },
   {
     id: 'v17',
@@ -428,6 +476,9 @@ export const VENUE_POOL: Venue[] = [
     iconTone: 'natural',
     iconName: 'tools-kitchen-2',
     distanceKm: 9.5,
+    openHours: '11:30–22:30',
+    priceNote: '¥150–280/人',
+    addressLine: '浦东新区东育路 500 号',
   },
   {
     id: 'v18',
@@ -437,6 +488,9 @@ export const VENUE_POOL: Venue[] = [
     iconTone: 'bazaar',
     iconName: 'building-store',
     distanceKm: 1.8,
+    openHours: '06:00–13:00',
+    priceNote: '¥8–18/人',
+    addressLine: '静安区南京西路 1649 号',
   },
   {
     id: 'v19',
@@ -446,6 +500,9 @@ export const VENUE_POOL: Venue[] = [
     iconTone: 'literate',
     iconName: 'plant-2',
     distanceKm: 4.8,
+    openHours: '10:00–20:00',
+    priceNote: '¥28–45/人',
+    addressLine: '静安区莫干山路 50 号',
   },
   {
     id: 'v20',
@@ -455,6 +512,9 @@ export const VENUE_POOL: Venue[] = [
     iconTone: 'bazaar',
     iconName: 'tools-kitchen-2',
     distanceKm: 7.2,
+    openHours: '17:00–02:00',
+    priceNote: '¥45–70/人',
+    addressLine: '杨浦区国定路 335 号',
   },
   {
     id: 'v21',
@@ -464,6 +524,9 @@ export const VENUE_POOL: Venue[] = [
     iconTone: 'natural',
     iconName: 'building-store',
     distanceKm: 10,
+    openHours: '07:00–18:00',
+    priceNote: '门票 ¥10',
+    addressLine: '浦东新区锦绣路 1001 号',
   },
   {
     id: 'v22',
@@ -473,6 +536,9 @@ export const VENUE_POOL: Venue[] = [
     iconTone: 'natural',
     iconName: 'tools-kitchen-2',
     distanceKm: 2.8,
+    openHours: '18:00–01:30',
+    priceNote: '¥58–88/人',
+    addressLine: '静安区南京西路 1266 号',
   },
 ]
 

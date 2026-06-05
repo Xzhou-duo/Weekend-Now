@@ -79,6 +79,7 @@ export function SwipeStep({
 
   const [dx, setDx] = useState(0)
   const [dy, setDy] = useState(0)
+  const [isDragging, setIsDragging] = useState(false)
   const drag = useRef({ active: false, startX: 0, startY: 0 })
 
   const current = SWIPE_DECK[index]
@@ -107,6 +108,7 @@ export function SwipeStep({
 
   const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     drag.current = { active: true, startX: e.clientX, startY: e.clientY }
+    setIsDragging(true)
     ;(e.target as HTMLElement).setPointerCapture?.(e.pointerId)
   }
 
@@ -119,6 +121,7 @@ export function SwipeStep({
   const onPointerUp = () => {
     if (!drag.current.active || !current) return
     drag.current.active = false
+    setIsDragging(false)
     const tX = 72
     const tY = -64
     if (dy < tY && Math.abs(dy) > Math.abs(dx)) finalize('bookmark')
@@ -176,39 +179,104 @@ export function SwipeStep({
           <div
             className="h-full origin-bottom will-change-transform"
             style={{
-              transform: `translate(${dx}px, ${dy}px) rotate(${dx * 0.04}deg)`,
+              transform: `translate(${dx}px, ${dy}px)`,
             }}
           >
-            <SwipeCardFrame model={current} className="h-full" />
+            <div
+              className="relative h-full"
+              style={{
+                transform: `rotate(${dx * 0.06}deg)`,
+                transition: isDragging ? 'none' : 'transform 0.3s ease',
+              }}
+            >
+              {Math.abs(dx) > 10 && (
+                <div
+                  className="pointer-events-none absolute inset-0 rounded-card-main"
+                  style={{
+                    background:
+                      dx > 0
+                        ? `rgba(34, 197, 94, ${Math.min(dx / 120, 0.28)})`
+                        : `rgba(239, 68, 68, ${Math.min(Math.abs(dx) / 120, 0.28)})`,
+                    transition: 'background 0.05s',
+                  }}
+                />
+              )}
+              {dy < -15 && Math.abs(dy) > Math.abs(dx) && (
+                <div
+                  className="pointer-events-none absolute inset-0 rounded-card-main"
+                  style={{
+                    background: `rgba(245, 158, 11, ${Math.min(Math.abs(dy) / 100, 0.25)})`,
+                    transition: 'background 0.05s',
+                  }}
+                />
+              )}
+
+              <SwipeCardFrame model={current} className="h-full" />
+
+              <div
+                className="pointer-events-none absolute right-3 top-3 rotate-[18deg] rounded-[6px] border-2 border-green-500 px-2 py-0.5"
+                style={{ opacity: Math.min(Math.max(dx - 20, 0) / 80, 1) }}
+              >
+                <span className="text-[13px] font-bold text-green-500">喜欢</span>
+              </div>
+
+              <div
+                className="pointer-events-none absolute left-3 top-3 rotate-[-18deg] rounded-[6px] border-2 border-red-400 px-2 py-0.5"
+                style={{ opacity: Math.min(Math.max(-dx - 20, 0) / 80, 1) }}
+              >
+                <span className="text-[13px] font-bold text-red-400">跳过</span>
+              </div>
+
+              <div
+                className="pointer-events-none absolute left-1/2 top-3 -translate-x-1/2 rounded-[6px] border-2 border-amber-400 px-2 py-0.5"
+                style={{
+                  opacity:
+                    dy < -15 && Math.abs(dy) > Math.abs(dx)
+                      ? Math.min(Math.abs(dy) / 80, 1)
+                      : 0,
+                }}
+              >
+                <span className="text-[13px] font-bold text-amber-400">收藏</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="flex shrink-0 items-center justify-center gap-[14px] bg-surface-bg px-page-h pb-3 pt-2">
-        <button
-          type="button"
-          aria-label="不喜欢"
-          onClick={() => finalize('dislike')}
-          className="flex h-[46px] w-[46px] items-center justify-center rounded-full bg-danger-light text-danger"
-        >
-          <IconX size={20} stroke={2} />
-        </button>
-        <button
-          type="button"
-          aria-label="喜欢"
-          onClick={() => finalize('like')}
-          className="flex h-14 w-14 items-center justify-center rounded-full bg-brand-purple text-brand-purple-light"
-        >
-          <IconHeartFilled size={24} />
-        </button>
-        <button
-          type="button"
-          aria-label="收藏"
-          onClick={() => finalize('bookmark')}
-          className="flex h-[46px] w-[46px] items-center justify-center rounded-full bg-amber-light text-amber-collect"
-        >
-          <IconBookmark size={20} stroke={2} />
-        </button>
+      <div className="flex shrink-0 items-end justify-center gap-[14px] bg-surface-bg px-page-h pb-3 pt-2">
+        <div className="flex flex-col items-center gap-0.5">
+          <button
+            type="button"
+            aria-label="不喜欢"
+            onClick={() => finalize('dislike')}
+            className="flex h-[46px] w-[46px] items-center justify-center rounded-full bg-danger-light text-danger"
+          >
+            <IconX size={20} stroke={2} />
+          </button>
+          <span className="text-[9px] text-text-tertiary">不喜欢</span>
+        </div>
+        <div className="flex flex-col items-center gap-0.5">
+          <button
+            type="button"
+            aria-label="喜欢"
+            onClick={() => finalize('like')}
+            className="flex h-14 w-14 items-center justify-center rounded-full bg-brand-purple text-brand-purple-light"
+          >
+            <IconHeartFilled size={24} />
+          </button>
+          <span className="text-[9px] text-text-tertiary">喜欢</span>
+        </div>
+        <div className="flex flex-col items-center gap-0.5">
+          <button
+            type="button"
+            aria-label="收藏"
+            onClick={() => finalize('bookmark')}
+            className="flex h-[46px] w-[46px] items-center justify-center rounded-full bg-amber-light text-amber-collect"
+          >
+            <IconBookmark size={20} stroke={2} />
+          </button>
+          <span className="text-[9px] text-text-tertiary">收藏 / 上滑</span>
+        </div>
       </div>
     </div>
   )

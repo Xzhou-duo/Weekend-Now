@@ -4,6 +4,8 @@ export type Step =
   | 'results'
   /** PRD 场景三：对推荐结果刷卡并实时重排 */
   | 'reco-swipe'
+  /** 决定去处后的出发祝福页 */
+  | 'depart'
   /** PRD 场景四：出行后按店反馈 */
   | 'visit-feedback'
   | 'feedback'
@@ -73,6 +75,9 @@ export interface Venue {
   iconName: SwipeCardModel['iconName']
   /** mock 直线距离 km，接地图 API 后可替换 */
   distanceKm?: number
+  openHours?: string
+  priceNote?: string
+  addressLine?: string
 }
 
 export interface Recommendation {

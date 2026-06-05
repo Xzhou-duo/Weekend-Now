@@ -1,11 +1,15 @@
+import { useEffect } from 'react'
 import {
   IconArrowLeft,
   IconBookmark,
   IconClock,
   IconCoin,
   IconMapPin,
+  IconX,
 } from '@tabler/icons-react'
 import type { QuizAnswers, Recommendation } from '../types'
+import { trackMvp } from '../analytics'
+import { getSurveyUrl } from '../surveyUrl'
 import { AiReasonBox } from './AiReasonBox'
 import { PlaceIcon } from './PlaceIcon'
 import { venueMetaLine } from '../recoUi'
@@ -26,6 +30,8 @@ export function VenueDetailSheet({
   item,
   quiz,
   bookmarked,
+  surveyNudgeVisible = false,
+  onDismissSurveyNudge,
   onBack,
   onToggleBookmark,
   onDecideHere,
@@ -34,12 +40,20 @@ export function VenueDetailSheet({
   quiz: Required<QuizAnswers>
   recoSource?: 'mimo' | 'rules'
   bookmarked: boolean
+  surveyNudgeVisible?: boolean
+  onDismissSurveyNudge?: () => void
   onBack: () => void
   onToggleBookmark: () => void
   onDecideHere: () => void
 }) {
   const { venue } = item
   const meta = venueMetaLine(venue, quiz)
+  const surveyUrl = getSurveyUrl()
+
+  useEffect(() => {
+    if (!surveyNudgeVisible) return
+    trackMvp('mvp_survey_prompt_view', { url: surveyUrl, placement: 'detail' })
+  }, [surveyNudgeVisible, surveyUrl])
 
   return (
     <div className="-mx-page-h flex min-h-0 flex-1 flex-col overflow-hidden bg-surface-bg">
@@ -78,23 +92,54 @@ export function VenueDetailSheet({
         <div className="flex flex-wrap gap-2.5">
           <span className="flex items-center gap-1 text-caption text-text-secondary">
             <IconMapPin size={10} aria-hidden />
-            {meta || venue.categoryLine}
+            {venue.addressLine ?? (meta || venue.categoryLine)}
           </span>
           <span className="flex items-center gap-1 text-caption text-text-secondary">
             <IconCoin size={10} aria-hidden />
-            {venue.tags.includes('budget')
-              ? '亲民'
-              : venue.tags.includes('premium')
-                ? '¥80/人'
-                : '中等消费'}
+            {venue.priceNote ??
+              (venue.tags.includes('budget')
+                ? '¥20–40/人'
+                : venue.tags.includes('premium')
+                  ? '¥80+/人'
+                  : '¥50–80/人')}
           </span>
         </div>
         <div className="flex items-center gap-1 text-caption text-text-secondary">
           <IconClock size={10} aria-hidden />
-          营业中 · 11:00-22:00
+          营业中 · {venue.openHours ?? '11:00–22:00'}
         </div>
         <AiReasonBox>{item.reason}</AiReasonBox>
       </div>
+
+      {surveyNudgeVisible ? (
+        <div className="mx-page-h mb-2 flex items-center gap-2 rounded-block border border-brand-purple bg-brand-purple-light px-3 py-2.5">
+          <p className="min-w-0 flex-1 text-caption leading-[1.4] text-brand-purple-deep">
+            帮个小忙 · 约 1 分钟匿名问卷
+          </p>
+          <a
+            href={surveyUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() =>
+              trackMvp('mvp_survey_open_click', {
+                url: surveyUrl,
+                placement: 'detail',
+              })
+            }
+            className="shrink-0 rounded-badge bg-brand-purple px-2.5 py-1 text-hint font-medium text-white"
+          >
+            填写
+          </a>
+          <button
+            type="button"
+            aria-label="关闭问卷提示"
+            onClick={onDismissSurveyNudge}
+            className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-brand-purple-deep"
+          >
+            <IconX size={14} stroke={2} />
+          </button>
+        </div>
+      ) : null}
 
       <div className="flex shrink-0 gap-2 px-page-h pb-[14px]">
         <button
