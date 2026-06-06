@@ -1,7 +1,7 @@
 /** class 片段 · 对齐 docs/design-system.md V2.0 */
 
 export const purpleHeader =
-  '-mx-page-h shrink-0 bg-brand-purple px-page-h pb-5 pt-4'
+  '-mx-page-h shrink-0 overflow-hidden rounded-b-card-main bg-brand-purple px-page-h pb-5 pt-4'
 
 export const matchBadgeHi =
   'shrink-0 rounded-badge bg-teal-light px-[7px] py-[3px] text-[10px] font-bold text-teal-deep'

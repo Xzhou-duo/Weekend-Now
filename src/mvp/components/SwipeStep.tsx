@@ -7,6 +7,7 @@ import type { SwipeAction, SwipeCardModel, TasteTag } from '../types'
 import { Chip } from './Chip'
 import { MvpProgressBar } from './MvpProgressBar'
 import { VenuePhoto } from './VenuePhoto'
+import { purpleHeader } from '../figmaUi'
 import { trackMvp } from '../analytics'
 
 function SwipeCardFrame({
@@ -127,40 +128,38 @@ export function SwipeStep({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col bg-surface-bg">
-      <div className="shrink-0 bg-surface-card px-0 pb-2.5 pt-1">
-        <p className="text-caption text-text-secondary">嗨，先认识一下你的口味</p>
-        <h2 className="mt-0.5 text-title-page leading-[1.2] text-text-primary">
+      <header className={purpleHeader}>
+        <p className="text-caption text-text-on-purple">嗨，先认识一下你的口味</p>
+        <h2 className="mt-1.5 text-title-section leading-[1.2] text-white">
           左滑不喜欢，
           <br />
           右滑
-          <span className="border-b-2 border-brand-purple text-brand-purple">
-            喜欢
-          </span>
+          <span className="border-b-2 border-white text-white">喜欢</span>
         </h2>
         {!lifetimeDone ? (
-          <p className="mt-1 text-hint text-text-tertiary">
+          <p className="mt-1 text-hint text-text-on-purple">
             收藏上滑 · 滑满 {COLD_START_TARGET} 张后推荐更准
           </p>
         ) : null}
-      </div>
+        <div className="mt-3">
+          <MvpProgressBar
+            current={sessionCurrent}
+            total={COLD_START_TARGET}
+            variant="onPurple"
+          />
+          {canSkipUsingProfile && onSkipToQuiz ? (
+            <button
+              type="button"
+              onClick={onSkipToQuiz}
+              className="mt-2 w-full rounded-block border border-white/30 bg-white/10 py-2 text-caption font-medium text-white"
+            >
+              跳过 · 使用已有口味档案
+            </button>
+          ) : null}
+        </div>
+      </header>
 
-      <div className="shrink-0 bg-surface-card py-2">
-        <MvpProgressBar
-          current={sessionCurrent}
-          total={COLD_START_TARGET}
-        />
-        {canSkipUsingProfile && onSkipToQuiz ? (
-          <button
-            type="button"
-            onClick={onSkipToQuiz}
-            className="mt-2 w-full rounded-block border border-brand-purple bg-brand-purple-light py-2 text-caption font-medium text-brand-purple-deep"
-          >
-            跳过 · 使用已有口味档案
-          </button>
-        ) : null}
-      </div>
-
-      <div className="relative min-h-[220px] flex-1 px-0 py-2">
+      <div className="relative min-h-[220px] flex-1 px-0 py-3">
         <div
           className="h-full touch-none select-none"
           onPointerDown={onPointerDown}

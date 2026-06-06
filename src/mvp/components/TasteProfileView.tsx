@@ -37,7 +37,7 @@ export function TasteProfileView({ state }: { state: PersistedMvpStateV1 }) {
       : `再滑 ${Math.max(0, COLD_START_TARGET - state.coldStartSwipeCount)} 张卡，推荐会更准。`
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-element overflow-x-hidden overflow-y-auto bg-surface-bg pb-24">
+    <div className="flex min-h-0 flex-1 flex-col bg-surface-bg">
       <header className={purpleHeader}>
         <div className="flex items-center gap-2.5">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-purple-light">
@@ -61,7 +61,8 @@ export function TasteProfileView({ state }: { state: PersistedMvpStateV1 }) {
         </div>
       </header>
 
-      <div className="grid grid-cols-2 gap-[7px]">
+      <div className="flex min-h-0 flex-1 flex-col gap-element overflow-x-hidden overflow-y-auto pb-24 pt-3">
+        <div className="grid grid-cols-2 gap-[7px]">
         {GRID_AXES.map(({ id, dim, bar }) => {
           const axis = PROFILE_AXES.find((a) => a.id === id)
           if (!axis) return null
@@ -81,9 +82,10 @@ export function TasteProfileView({ state }: { state: PersistedMvpStateV1 }) {
             </div>
           )
         })}
-      </div>
+        </div>
 
-      <AiNoteBox>{noteText}</AiNoteBox>
+        <AiNoteBox>{noteText}</AiNoteBox>
+      </div>
     </div>
   )
 }
