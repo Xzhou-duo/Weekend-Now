@@ -31,12 +31,12 @@ npm run build
 
 `src/mvp/` 主流程（详见 **`docs/MVP-validation.md`**）：
 
-1. **冷启动** `SwipeStep`：20 张口味卡，≥8 张解锁推荐；滑卡倾斜 + 渐变反馈；底部按钮带标签  
+1. **冷启动** `SwipeStep`：20 张口味卡，≥8 张解锁推荐；白底引导区 + 紫色进度条；滑卡倾斜 + 渐变反馈；底部按钮带标签  
 2. **今日三题** `QuizStep`：默认预填，可直接提交  
 3. **推荐决策**：默认 **RecoSwipe** 刷卡（可切列表）；8 条池 + 实时重排；AI 理由 2 行展示  
-4. **详情** `VenueDetailSheet`：地址 / 价格 / 营业时间；首次打开 3s 后问卷横幅  
-5. **决定去处** → `DepartStep` 出发祝福 → 延后 `pendingFeedback` → 回访横幅触发出行反馈  
-6. **反馈**：心动感受（出发后）/ 整体感受（出行后）→ 问卷 → 结束  
+4. **详情** `VenueDetailSheet`：地址 / 价格 / 营业时间  
+5. **决定去处** → `DepartStep` 出发祝福 → 写入 `pendingFeedback` → 回访时 Quiz 页横幅触发出行反馈  
+6. **出行反馈** `VisitFeedbackStep`：按店回收信号，更新口味画像（无整体感受页、无外链问卷）  
 7. 底部 Tab：**发现 / 收藏 / 我的口味** · 候选 POI 22 条（上海 mock）
 
 `npm run dev` + 本地 API 时会先请求 `POST /api/recommend`（MiMo），失败或未配置密钥则自动使用 `src/mvp/recommend.ts` 规则兜底。

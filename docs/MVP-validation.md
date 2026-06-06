@@ -1,7 +1,7 @@
 # 拍了拍 · MVP 验证 PRD
 
 > Web 端概念验证（Vite + React）。与代码实现 `src/mvp/` 对齐。  
-> 版本：**V1.1** · 更新日期：2026-06-05 · 阶段：**可交互原型 / 假设验证**
+> 版本：**V1.2** · 更新日期：2026-06-06 · 阶段：**可交互原型 / 假设验证**
 
 ---
 
@@ -12,9 +12,9 @@
 1. **情境输入 + 口味画像** 能否在 5 分钟内产出「愿意点开看」的本地推荐。
 2. **AI 推荐理由** 是否比纯列表更能建立信任与差异化感知。
 3. **刷卡决策** 是否比列表更适合「周末懒得想」的模糊需求。
-4. **出行后反馈** 能否在正确时机回收信号，并让回访用户感到「越用越懂我」。
+4. **出行后按店反馈** 能否在正确时机回收信号，并让回访用户感到「越用越懂我」。
 
-非目标（本阶段不做）：真实 POI 接入、账号体系、支付、社交、推送。
+非目标（本阶段不做）：真实 POI 接入、账号体系、支付、社交、推送、外链问卷、整体满意度打分。
 
 ---
 
@@ -34,6 +34,7 @@
 ### 场景一 · 冷启动建档（`SwipeStep`）
 
 - 20 张口味测试卡，覆盖环境 / 价格 / 类型 / 社交四维度。
+- 顶部引导区：**白底卡片**（`bg-surface-card`），主文案深色、「喜欢」紫色高亮；进度条为浅紫轨道 + 紫色填充。
 - 手势：左滑不喜欢、右滑喜欢、上滑收藏；底部按钮带文字标签。
 - 拖动反馈：卡片轻微倾斜 + 整卡渐变色 + 角标（喜欢 / 跳过 / 收藏）渐显。
 - **门槛**：`COLD_START_GATE = 8` 张即可解锁完整推荐；进度条仍显示 **X / 20**（滑满更准）。
@@ -44,6 +45,7 @@
 - 三题：几个人 / 什么状态 / 能接受多远。
 - 开箱默认：`solo` · `fresh` · `metro`（紫底白字已选中 + Header 提示「已帮你预填，可直接提交」）。
 - 提交后请求 MiMo 推荐 API，失败则走本地规则 `recommend.ts`。
+- 若存在 `pendingFeedback`，顶部展示回访横幅「上次去了 XX，感觉怎么样？」。
 
 ### 场景三 · 推荐决策（`RecoSwipeStep` / `ResultsStep`）
 
@@ -51,16 +53,13 @@
 - **默认进入 RecoSwipe**（刷卡挑去处）；右上角「列表视图」切到列表。
 - RecoSwipe 卡片：琥珀色「今日推荐」标签、地址 / 价格、完整 AI 理由；与冷启动「口味测试」卡视觉区分。
 - 列表卡：AI 理由 **2 行完整展示**（`line-clamp-2`），探索位文案「为你加入一个新鲜探索」。
-- 详情页：真实感 `openHours` / `priceNote` / `addressLine`；首次打开场所 **3 秒后** 底部问卷横幅（可关闭）。
+- 详情页：真实感 `openHours` / `priceNote` / `addressLine`；无问卷横幅、无外链跳转。
 
-### 场景四 · 反馈闭环（`DepartStep` / `VisitFeedbackStep` / `FeedbackStep`）
+### 场景四 · 反馈闭环（`DepartStep` / `VisitFeedbackStep`）
 
-- **决定去处**：详情「就决定这里了」→ **出发祝福页**（非立刻出行反馈）→ 写入 `pendingFeedback`。
-- **回访**：Quiz 页顶部横幅「上次去了 XX，感觉怎么样？」→ 出行反馈 → 清除 pending。
-- **整体感受**分两种文案：
-  - 出发后（`post-depart`）：「有没有让你心动的地方？」
-  - 出行后（`post-visit`）：「整体感受？」
-- 列表页「今天先到这」进入问卷引导，**不再**从列表直接进整体反馈。
+- **决定去处**：详情「就决定这里了」→ **出发祝福页**（非立刻出行反馈）→ 写入 `pendingFeedback` → 结束本轮（回到冷启动 / 问卷入口）。
+- **回访**：Quiz 页顶部横幅 → `VisitFeedbackStep` 按店反馈 → 更新画像并清除 pending → **返回进入反馈前的页面**（Quiz 或结果列表）。
+- **已移除**：整体感受页（`FeedbackStep`）、腾讯问卷引导（`SurveyPromptStep`）、详情页 3s 问卷横幅、列表页「今天先到这 / 说说感受」入口。
 
 ---
 
@@ -76,11 +75,9 @@
               └─ RecoSwipeStep（默认）
                   ├─ 「列表视图」→ ResultsStep
                   └─ 点场所 → VenueDetailSheet
-                      ├─ 3s 后问卷横幅（首次）
                       └─ 「就决定这里了」
                           └─ DepartStep（出发祝福）
-                              └─ FeedbackStep（心动感受）
-                                  └─ SurveyPromptStep → Done
+                              └─ 写入 pendingFeedback → 重新开始
 ```
 
 ### 4.2 回访（有 pendingFeedback）
@@ -88,8 +85,7 @@
 ```
 QuizStep 横幅「上次去了 XX…」
   └─ VisitFeedbackStep
-      └─ FeedbackStep（整体感受）
-          └─ SurveyPromptStep → Done
+      └─ 返回 Quiz / Results（并更新口味画像）
 ```
 
 ### 4.3 底部 Tab
@@ -97,7 +93,7 @@ QuizStep 横幅「上次去了 XX…」
 | Tab | 内容 |
 |-----|------|
 | 发现 | 上述主流程 |
-| 收藏 | `BookmarksView` |
+| 收藏 | `BookmarksView`（可查看详情、决定去处） |
 | 我的 | `TasteProfileView` 口味画像 |
 
 ---
@@ -110,11 +106,8 @@ QuizStep 横幅「上次去了 XX…」
 | `quiz` | QuizStep | 今日三题 |
 | `reco-swipe` | RecoSwipeStep | 推荐刷卡（默认） |
 | `results` | ResultsStep / ResultsEmptyStep | 列表 / 建档不足拦截 |
-| `depart` | DepartStep | 出发祝福（新增） |
+| `depart` | DepartStep | 出发祝福 |
 | `visit-feedback` | VisitFeedbackStep | 出行后按店反馈 |
-| `feedback` | FeedbackStep | 整体 / 心动感受 |
-| `survey` | SurveyPromptStep | 腾讯问卷引导 |
-| `done` | — | 本轮结束 |
 
 **持久化**（`localStorage` · `paipaipai-mvp-state-v1`）：
 
@@ -122,7 +115,7 @@ QuizStep 横幅「上次去了 XX…」
 - `coldStartSwipeCount` / `coldStartCompletedAt`
 - `bookmarks` / `venueFeedbackHistory`
 - `pendingFeedback`：`{ venueId, venueName, quizSnapshot, decidedAt }`
-- `overallFeedback` / `completedFlows` / `sessionCount`
+- `sessionCount`（`overallFeedback` / `completedFlows` 为历史字段，当前 UI 不再写入）
 
 ---
 
@@ -130,7 +123,7 @@ QuizStep 横幅「上次去了 XX…」
 
 | 功能 | 优先级 | 状态 | 备注 |
 |------|--------|------|------|
-| 滑卡冷启动建档 | P0 | ✅ | 手势反馈 + 按钮标签 |
+| 滑卡冷启动建档 | P0 | ✅ | 白底引导区 + 手势反馈 |
 | 今日状态三题 | P0 | ✅ | 默认预填 |
 | 8 条推荐池 + MiMo/规则双通道 | P0 | ✅ | |
 | AI 理由列表 2 行展示 | P0 | ✅ | |
@@ -138,12 +131,13 @@ QuizStep 横幅「上次去了 XX…」
 | 决定去处 → 出发页 → 延后出行反馈 | P0 | ✅ | pendingFeedback |
 | 冷启动门槛降至 8 张 | P1 | ✅ | GATE / TARGET 分离 |
 | Quiz 预填提示文案 | P1 | ✅ | |
-| 整体反馈时机与双文案 | P1 | ✅ | post-depart / post-visit |
-| 详情页问卷横幅（3s） | P1 | ✅ | 每轮首次打开场所 |
+| 出行后按店反馈 + 画像更新 | P1 | ✅ | VisitFeedbackStep |
 | 默认 RecoSwipe + 列表切换 | P2 | ✅ | |
 | RecoSwipe 卡片视觉区分 | P2 | ✅ | 今日推荐 / 地址价格 |
 | 我的口味画像 | P1 | ✅ | |
 | 收藏夹 | P1 | ✅ | |
+| 整体感受 / 心动感受页 | — | ❌ | V1.2 移除 |
+| 腾讯问卷 / 详情问卷横幅 | — | ❌ | V1.2 移除 |
 | 授权数据导入 | P2 | ⏳ | 未实现 |
 
 ---
@@ -169,10 +163,10 @@ QuizStep 横幅「上次去了 XX…」
 | `mvp_results_view` | 进入列表 |
 | `mvp_reco_swipe_enter` / `_action` / `_done` | 推荐刷卡 |
 | `mvp_result_expand` | 打开详情 |
-| `mvp_survey_prompt_view` / `_open_click` | 问卷（含 detail 横幅 placement） |
-| `mvp_visit_feedback_submit` | 出行反馈 |
-| `mvp_feedback_submit` | 整体 / 心动反馈 |
-| `mvp_flow_complete` | 本轮结束 |
+| `mvp_visit_feedback_submit` | 出行按店反馈 |
+| `mvp_profile_updated` | 反馈后画像更新 |
+
+> 历史事件 `mvp_feedback_submit`、`mvp_survey_*`、`mvp_flow_complete` 仍保留在 `analytics.ts` 类型中，当前流程不再触发。
 
 ---
 
@@ -183,16 +177,14 @@ QuizStep 横幅「上次去了 XX…」
 | 冷启动完成率（≥8 张） | > 70% | 门槛已降低 |
 | 推荐生成 → 打开详情 | > 35% | 信任与理由质量 |
 | 决定去处转化率 | > 15% | 详情 → 就决定这里了 |
-| 回访 pending 反馈点击率 | > 25% | 横幅有效性 |
-| 问卷横幅 → 打开 | > 10% | 前移入口 |
-| 第 3 次使用「变准了」感知 | > 60% | 问卷自报 |
+| 回访 pending 反馈完成率 | > 25% | Quiz 横幅有效性 |
+| 第 3 次使用「变准了」感知 | > 60% | 访谈 / 可用性自报 |
 
 ---
 
 ## 10. 已知限制与后续
 
 - POI 为上海 mock，无地图 / 营业状态实时校验。
-- 问卷依赖腾讯问卷外链；生产需配置 `VITE_SURVEY_URL`。
 - MiMo API 需 Railway 部署 + `VITE_API_BASE_URL`（见 README）。
 - 冷启动拦截页（`ResultsEmptyStep`）在默认 RecoSwipe 路径下较少触发；列表视图仍可看到。
 - 原生 App（iOS/Android）能力见桌面版概念 PRD `pailiaopai_prd.html`，本仓库仅 Web MVP。
@@ -206,3 +198,12 @@ QuizStep 横幅「上次去了 XX…」
 | `docs/design-system.md` | 视觉规范与 Tailwind 令牌 |
 | `README.md` | 开发、部署、本地 API |
 | `拍了拍_MVP迭代开发文档.md` | P0–P2 迭代任务来源（产品桌面） |
+
+---
+
+## 12. 变更记录
+
+| 版本 | 日期 | 摘要 |
+|------|------|------|
+| V1.2 | 2026-06-06 | 移除腾讯问卷与整体感受流程；SwipeStep 引导区改为白底卡片 |
+| V1.1 | 2026-06-05 | 出发祝福页、RecoSwipe 默认、问卷横幅等 P0–P2 迭代 |
