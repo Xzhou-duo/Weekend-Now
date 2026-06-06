@@ -1,18 +1,6 @@
 import { IconTrash } from '@tabler/icons-react'
 import type { BookmarkEntry, Venue } from '../types'
-import { PlaceIcon } from './PlaceIcon'
-
-const toneBg = {
-  natural: 'bg-icon-block-natural',
-  literate: 'bg-icon-block-literate',
-  bazaar: 'bg-icon-block-bazaar',
-} as const
-
-const toneFg = {
-  natural: 'text-teal-deep',
-  literate: 'text-brand-purple-darkest',
-  bazaar: 'text-amber-deep',
-} as const
+import { VenuePhoto } from './VenuePhoto'
 
 function timeLabel(savedAt: number): string {
   const daysAgo = Math.floor((Date.now() - savedAt) / 86_400_000)
@@ -64,13 +52,12 @@ export function BookmarksView({
                 className="flex min-w-0 flex-1 items-center gap-3 text-left"
                 onClick={() => onSelect(entry.venueId)}
               >
-                <div
-                  className={`flex h-[46px] w-[46px] shrink-0 items-center justify-center rounded-icon-block ${toneBg[venue.iconTone]}`}
-                >
-                  <PlaceIcon
-                    name={venue.iconName}
-                    size={20}
-                    className={toneFg[venue.iconTone]}
+                <div className="h-[46px] w-[46px] shrink-0 overflow-hidden rounded-icon-block bg-surface-secondary">
+                  <VenuePhoto
+                    imageId={venue.imageId}
+                    alt={venue.name}
+                    width={92}
+                    height={92}
                   />
                 </div>
                 <div className="min-w-0 flex-1">

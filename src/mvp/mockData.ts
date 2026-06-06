@@ -14,6 +14,7 @@ import type {
 export const SWIPE_DECK: SwipeCardModel[] = [
   {
     id: 'c1',
+    imageId: '1750635409983-78ca6a8cf324',
     title: '露天夜市摊位',
     description: '嘈杂热闹，烟火气足，随意逛逛',
     chips: [
@@ -27,6 +28,7 @@ export const SWIPE_DECK: SwipeCardModel[] = [
   },
   {
     id: 'c2',
+    imageId: '1741448682479-ec6db29cf9a0',
     title: '街角小咖啡馆',
     description: '安静角落，适合发呆或看书',
     chips: [
@@ -40,6 +42,7 @@ export const SWIPE_DECK: SwipeCardModel[] = [
   },
   {
     id: 'c3',
+    imageId: '1591325418441-ff678baf78ef',
     title: '商场顶楼排档',
     description: '选择多，适合「随便吃吃」',
     chips: [
@@ -53,6 +56,7 @@ export const SWIPE_DECK: SwipeCardModel[] = [
   },
   {
     id: 'c4',
+    imageId: '1742617361985-d69e1faa1378',
     title: '河滨栈道散步',
     description: '人少景开，走一走就放松',
     chips: [
@@ -66,6 +70,7 @@ export const SWIPE_DECK: SwipeCardModel[] = [
   },
   {
     id: 'c5',
+    imageId: '1743091584076-ea57d7aa161f',
     title: '设计集合店',
     description: '空间好看，适合逛逛拍照',
     chips: [
@@ -79,6 +84,7 @@ export const SWIPE_DECK: SwipeCardModel[] = [
   },
   {
     id: 'c6',
+    imageId: '1761526519778-025b51d34630',
     title: '本帮小馆私房菜',
     description: '口碑老店，适合你认真吃一顿',
     chips: [
@@ -92,6 +98,7 @@ export const SWIPE_DECK: SwipeCardModel[] = [
   },
   {
     id: 'c7',
+    imageId: '1757332914512-ffaf5b521ba8',
     title: '社区烘焙坊',
     description: '出炉香气，配一杯拿铁刚好',
     chips: [
@@ -105,6 +112,7 @@ export const SWIPE_DECK: SwipeCardModel[] = [
   },
   {
     id: 'c8',
+    imageId: '1696062985887-dac92c238f99',
     title: 'Live 小酒馆',
     description: '音乐与人群，适合想热闹一晚',
     chips: [
@@ -118,6 +126,7 @@ export const SWIPE_DECK: SwipeCardModel[] = [
   },
   {
     id: 'c9',
+    imageId: '1749894274841-95fa78941841',
     title: '老城厢弄堂小面',
     description: '街坊常去，汤头鲜、出餐快',
     chips: [
@@ -131,6 +140,7 @@ export const SWIPE_DECK: SwipeCardModel[] = [
   },
   {
     id: 'c10',
+    imageId: '1758165532022-a68f291317ba',
     title: '屋顶花园酒吧',
     description: '户外座位与城市夜景，适合约会小聚',
     chips: [
@@ -144,6 +154,7 @@ export const SWIPE_DECK: SwipeCardModel[] = [
   },
   {
     id: 'c11',
+    imageId: '1739015828099-29531aa4bd1a',
     title: '独立书店兼茶室',
     description: '安静翻书，适合独处恢复能量',
     chips: [
@@ -157,6 +168,7 @@ export const SWIPE_DECK: SwipeCardModel[] = [
   },
   {
     id: 'c12',
+    imageId: '1757609909192-0246239198c0',
     title: '周末农夫市集',
     description: '露天摊位多，适合三五人边逛边吃',
     chips: [
@@ -170,6 +182,7 @@ export const SWIPE_DECK: SwipeCardModel[] = [
   },
   {
     id: 'c13',
+    imageId: '1760539929403-085d5155c948',
     title: '商场地下美食街',
     description: '选择多、决策成本低，随便吃吃',
     chips: [
@@ -183,6 +196,7 @@ export const SWIPE_DECK: SwipeCardModel[] = [
   },
   {
     id: 'c14',
+    imageId: '1559712083-b30fb20ad204',
     title: '城郊露营咖啡',
     description: '开车稍远，但空间开阔能透气',
     chips: [
@@ -196,6 +210,7 @@ export const SWIPE_DECK: SwipeCardModel[] = [
   },
   {
     id: 'c15',
+    imageId: '1749894274841-95fa78941841',
     title: '深夜拉面吧台',
     description: '一人食友好，吃完无负担',
     chips: [
@@ -209,6 +224,7 @@ export const SWIPE_DECK: SwipeCardModel[] = [
   },
   {
     id: 'c16',
+    imageId: '1742145415317-170c91dc7006',
     title: '文创园区散步',
     description: '看展逛街一体，适合想换环境',
     chips: [
@@ -222,6 +238,7 @@ export const SWIPE_DECK: SwipeCardModel[] = [
   },
   {
     id: 'c17',
+    imageId: '1496116218417-1a781b1c416c',
     title: '老字号点心楼',
     description: '排队也值，适合认真吃一顿',
     chips: [
@@ -235,6 +252,7 @@ export const SWIPE_DECK: SwipeCardModel[] = [
   },
   {
     id: 'c18',
+    imageId: '1742617361985-d69e1faa1378',
     title: '滨江骑行道',
     description: '低强度运动 + 江景，放空首选',
     chips: [
@@ -248,6 +266,7 @@ export const SWIPE_DECK: SwipeCardModel[] = [
   },
   {
     id: 'c19',
+    imageId: '1676482721063-75c432590cdd',
     title: '桌游吧+简餐',
     description: '聚会不怕冷场，适合 3 人以上',
     chips: [
@@ -261,6 +280,7 @@ export const SWIPE_DECK: SwipeCardModel[] = [
   },
   {
     id: 'c20',
+    imageId: '1591325418441-ff678baf78ef',
     title: '巷子里的越南粉',
     description: '酸辣开胃，人均友好',
     chips: [
@@ -283,6 +303,7 @@ export const VENUE_POOL: Venue[] = [
     tags: ['quiet', 'cafe', 'solo', 'walk', 'design'],
     iconTone: 'literate',
     iconName: 'plant-2',
+    imageId: '1741448682479-ec6db29cf9a0',
     distanceKm: 0.9,
     openHours: '09:00–21:00',
     priceNote: '¥32–48/人',
@@ -295,6 +316,7 @@ export const VENUE_POOL: Venue[] = [
     tags: ['market', 'lively', 'budget', 'food', 'group', 'walk'],
     iconTone: 'bazaar',
     iconName: 'building-store',
+    imageId: '1750635409983-78ca6a8cf324',
     distanceKm: 1.4,
     openHours: '17:00–23:30',
     priceNote: '¥18–35/人',
@@ -307,6 +329,7 @@ export const VENUE_POOL: Venue[] = [
     tags: ['food', 'pair', 'metro', 'mid', 'design'],
     iconTone: 'natural',
     iconName: 'tools-kitchen-2',
+    imageId: '1761526519778-025b51d34630',
     distanceKm: 2.2,
     openHours: '11:30–22:00',
     priceNote: '¥68–98/人',
@@ -319,6 +342,7 @@ export const VENUE_POOL: Venue[] = [
     tags: ['outdoor', 'quiet', 'walk', 'solo', 'neighbor'],
     iconTone: 'natural',
     iconName: 'building-store',
+    imageId: '1742617361985-d69e1faa1378',
     distanceKm: 5.8,
     openHours: '08:00–20:00',
     priceNote: '免费入场',
@@ -331,6 +355,7 @@ export const VENUE_POOL: Venue[] = [
     tags: ['design', 'fresh', 'pair', 'metro', 'quiet'],
     iconTone: 'literate',
     iconName: 'plant-2',
+    imageId: '1743091584076-ea57d7aa161f',
     distanceKm: 1.7,
     openHours: '10:30–21:30',
     priceNote: '¥50–120/人',
@@ -343,6 +368,7 @@ export const VENUE_POOL: Venue[] = [
     tags: ['food', 'premium', 'pair', 'taxi', 'quiet'],
     iconTone: 'natural',
     iconName: 'tools-kitchen-2',
+    imageId: '1496116218417-1a781b1c416c',
     distanceKm: 3.4,
     openHours: '11:00–14:00, 17:00–21:30',
     priceNote: '¥120–180/人',
@@ -355,6 +381,7 @@ export const VENUE_POOL: Venue[] = [
     tags: ['lively', 'group', 'metro', 'mid', 'food'],
     iconTone: 'bazaar',
     iconName: 'tools-kitchen-2',
+    imageId: '1696062985887-dac92c238f99',
     distanceKm: 4.1,
     openHours: '16:00–02:00',
     priceNote: '¥55–85/人',
@@ -367,6 +394,7 @@ export const VENUE_POOL: Venue[] = [
     tags: ['cafe', 'quiet', 'solo', 'walk', 'budget'],
     iconTone: 'bazaar',
     iconName: 'building-store',
+    imageId: '1757332914512-ffaf5b521ba8',
     distanceKm: 0.7,
     openHours: '07:30–19:00',
     priceNote: '¥22–38/人',
@@ -379,6 +407,7 @@ export const VENUE_POOL: Venue[] = [
     tags: ['design', 'fresh', 'solo', 'pair', 'taxi', 'outdoor'],
     iconTone: 'literate',
     iconName: 'plant-2',
+    imageId: '1742145415317-170c91dc7006',
     distanceKm: 6.2,
     openHours: '10:00–18:00（周一闭馆）',
     priceNote: '门票 ¥50–100',
@@ -391,6 +420,7 @@ export const VENUE_POOL: Venue[] = [
     tags: ['outdoor', 'fresh', 'pair', 'metro', 'mid', 'lively'],
     iconTone: 'natural',
     iconName: 'building-store',
+    imageId: '1559712083-b30fb20ad204',
     distanceKm: 8.4,
     openHours: '11:00–23:00',
     priceNote: '¥60–90/人',
@@ -403,6 +433,7 @@ export const VENUE_POOL: Venue[] = [
     tags: ['cafe', 'quiet', 'budget', 'walk', 'neighbor'],
     iconTone: 'bazaar',
     iconName: 'tools-kitchen-2',
+    imageId: '1739015828099-29531aa4bd1a',
     distanceKm: 1.1,
     openHours: '12:00–22:00',
     priceNote: '¥15–28/人',
@@ -415,6 +446,7 @@ export const VENUE_POOL: Venue[] = [
     tags: ['outdoor', 'fresh', 'solo', 'design', 'taxi', 'metro'],
     iconTone: 'literate',
     iconName: 'plant-2',
+    imageId: '1742617361985-d69e1faa1378',
     distanceKm: 11,
     openHours: '09:30–21:00',
     priceNote: '¥35–55/人',
@@ -427,6 +459,7 @@ export const VENUE_POOL: Venue[] = [
     tags: ['pair', 'lively', 'premium', 'metro', 'design'],
     iconTone: 'literate',
     iconName: 'tools-kitchen-2',
+    imageId: '1758165532022-a68f291317ba',
     distanceKm: 2.5,
     openHours: '17:30–01:00',
     priceNote: '¥90–150/人',
@@ -439,6 +472,7 @@ export const VENUE_POOL: Venue[] = [
     tags: ['market', 'lively', 'group', 'metro', 'budget'],
     iconTone: 'bazaar',
     iconName: 'building-store',
+    imageId: '1760539929403-085d5155c948',
     distanceKm: 3.1,
     openHours: '10:00–22:00',
     priceNote: '¥25–45/人',
@@ -451,6 +485,7 @@ export const VENUE_POOL: Venue[] = [
     tags: ['cafe', 'design', 'pair', 'walk', 'premium'],
     iconTone: 'literate',
     iconName: 'plant-2',
+    imageId: '1757609909192-0246239198c0',
     distanceKm: 1.3,
     openHours: '10:00–20:00',
     priceNote: '¥88–128/人',
@@ -463,6 +498,7 @@ export const VENUE_POOL: Venue[] = [
     tags: ['food', 'budget', 'group', 'metro', 'neighbor'],
     iconTone: 'bazaar',
     iconName: 'tools-kitchen-2',
+    imageId: '1749894274841-95fa78941841',
     distanceKm: 12,
     openHours: '08:00–20:30',
     priceNote: '¥12–25/人',
@@ -475,6 +511,7 @@ export const VENUE_POOL: Venue[] = [
     tags: ['food', 'premium', 'pair', 'taxi', 'outdoor'],
     iconTone: 'natural',
     iconName: 'tools-kitchen-2',
+    imageId: '1758165532022-a68f291317ba',
     distanceKm: 9.5,
     openHours: '11:30–22:30',
     priceNote: '¥150–280/人',
@@ -487,6 +524,7 @@ export const VENUE_POOL: Venue[] = [
     tags: ['neighbor', 'budget', 'solo', 'walk', 'food'],
     iconTone: 'bazaar',
     iconName: 'building-store',
+    imageId: '1591325418441-ff678baf78ef',
     distanceKm: 1.8,
     openHours: '06:00–13:00',
     priceNote: '¥8–18/人',
@@ -499,6 +537,7 @@ export const VENUE_POOL: Venue[] = [
     tags: ['design', 'quiet', 'fresh', 'solo', 'metro'],
     iconTone: 'literate',
     iconName: 'plant-2',
+    imageId: '1742145415317-170c91dc7006',
     distanceKm: 4.8,
     openHours: '10:00–20:00',
     priceNote: '¥28–45/人',
@@ -511,6 +550,7 @@ export const VENUE_POOL: Venue[] = [
     tags: ['food', 'lively', 'group', 'metro', 'mid'],
     iconTone: 'bazaar',
     iconName: 'tools-kitchen-2',
+    imageId: '1676482721063-75c432590cdd',
     distanceKm: 7.2,
     openHours: '17:00–02:00',
     priceNote: '¥45–70/人',
@@ -523,6 +563,7 @@ export const VENUE_POOL: Venue[] = [
     tags: ['outdoor', 'group', 'fresh', 'taxi', 'quiet'],
     iconTone: 'natural',
     iconName: 'building-store',
+    imageId: '1757609909192-0246239198c0',
     distanceKm: 10,
     openHours: '07:00–18:00',
     priceNote: '门票 ¥10',
@@ -535,6 +576,7 @@ export const VENUE_POOL: Venue[] = [
     tags: ['food', 'solo', 'quiet', 'metro', 'mid'],
     iconTone: 'natural',
     iconName: 'tools-kitchen-2',
+    imageId: '1749894274841-95fa78941841',
     distanceKm: 2.8,
     openHours: '18:00–01:30',
     priceNote: '¥58–88/人',

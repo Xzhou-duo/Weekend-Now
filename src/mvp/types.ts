@@ -64,6 +64,8 @@ export interface SwipeCardModel {
   iconTone: 'natural' | 'literate' | 'bazaar'
   /** Tabler icon 名称后缀 */
   iconName: 'building-store' | 'tools-kitchen-2' | 'plant-2'
+  /** Unsplash 图片 ID（photo- 后的部分） */
+  imageId: string
 }
 
 export interface Venue {
@@ -73,6 +75,8 @@ export interface Venue {
   tags: TasteTag[]
   iconTone: SwipeCardModel['iconTone']
   iconName: SwipeCardModel['iconName']
+  /** Unsplash 图片 ID（photo- 后的部分） */
+  imageId: string
   /** mock 直线距离 km，接地图 API 后可替换 */
   distanceKm?: number
   openHours?: string

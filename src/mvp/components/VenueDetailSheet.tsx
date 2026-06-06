@@ -11,20 +11,8 @@ import type { QuizAnswers, Recommendation } from '../types'
 import { trackMvp } from '../analytics'
 import { getSurveyUrl } from '../surveyUrl'
 import { AiReasonBox } from './AiReasonBox'
-import { PlaceIcon } from './PlaceIcon'
+import { VenuePhoto } from './VenuePhoto'
 import { venueMetaLine } from '../recoUi'
-
-const toneBg = {
-  natural: 'bg-icon-block-natural',
-  literate: 'bg-icon-block-literate',
-  bazaar: 'bg-icon-block-bazaar',
-} as const
-
-const toneFg = {
-  natural: 'text-teal-deep',
-  literate: 'text-brand-purple-darkest',
-  bazaar: 'text-amber-deep',
-} as const
 
 export function VenueDetailSheet({
   item,
@@ -57,14 +45,15 @@ export function VenueDetailSheet({
 
   return (
     <div className="-mx-page-h flex min-h-0 flex-1 flex-col overflow-hidden bg-surface-bg">
-      <div
-        className={`relative flex h-[100px] shrink-0 items-center justify-center ${toneBg[venue.iconTone]}`}
-      >
-        <PlaceIcon
-          name={venue.iconName}
-          size={42}
-          className={toneFg[venue.iconTone]}
+      <div className="relative h-[160px] shrink-0 overflow-hidden bg-surface-secondary">
+        <VenuePhoto
+          imageId={venue.imageId}
+          alt={venue.name}
+          width={480}
+          height={320}
+          loading="eager"
         />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/10" />
         <button
           type="button"
           aria-label="返回"

@@ -11,21 +11,9 @@ import {
   reasonTagPurple,
   reasonTagTeal,
 } from '../figmaUi'
-import { PlaceIcon } from './PlaceIcon'
+import { VenuePhoto } from './VenuePhoto'
 import { resultsListSubtitle, venueMetaLine } from '../recoUi'
 import { MvpProgressBar } from './MvpProgressBar'
-
-const toneBg = {
-  natural: 'bg-icon-block-natural',
-  literate: 'bg-icon-block-literate',
-  bazaar: 'bg-icon-block-bazaar',
-} as const
-
-const toneFg = {
-  natural: 'text-teal-deep',
-  literate: 'text-brand-purple-darkest',
-  bazaar: 'text-amber-deep',
-} as const
 
 const FILTER_LABELS = ['全部', '吃饭', '逛逛', '喝咖啡'] as const
 
@@ -33,13 +21,12 @@ function PreviewCard({ row, quiz }: { row: Recommendation; quiz: Required<QuizAn
   return (
     <div className="rounded-card bg-surface-card p-[10px]">
       <div className="flex items-start gap-[10px]">
-        <div
-          className={`flex h-[54px] w-[54px] shrink-0 items-center justify-center rounded-icon-block ${toneBg[row.venue.iconTone]}`}
-        >
-          <PlaceIcon
-            name={row.venue.iconName}
-            size={24}
-            className={toneFg[row.venue.iconTone]}
+        <div className="h-[54px] w-[54px] shrink-0 overflow-hidden rounded-icon-block bg-surface-secondary">
+          <VenuePhoto
+            imageId={row.venue.imageId}
+            alt={row.venue.name}
+            width={108}
+            height={108}
           />
         </div>
         <div className="min-w-0 flex-1">

@@ -9,21 +9,9 @@ import {
 import type { QuizAnswers, Recommendation, SwipeAction, TasteTag } from '../types'
 import { AiReasonBox } from './AiReasonBox'
 import { MvpProgressBar } from './MvpProgressBar'
-import { PlaceIcon } from './PlaceIcon'
+import { VenuePhoto } from './VenuePhoto'
 import { trackMvp } from '../analytics'
 import { venueMetaLine } from '../recoUi'
-
-const toneBg = {
-  natural: 'bg-icon-block-natural',
-  literate: 'bg-icon-block-literate',
-  bazaar: 'bg-icon-block-bazaar',
-} as const
-
-const toneFg = {
-  natural: 'text-teal-deep',
-  literate: 'text-brand-purple-darkest',
-  bazaar: 'text-amber-deep',
-} as const
 
 function RecoCard({
   item,
@@ -42,33 +30,32 @@ function RecoCard({
       className="flex h-full min-h-[360px] flex-col overflow-hidden rounded-card-main border border-border-card bg-surface-card shadow-card"
       style={style}
     >
-      <div
-        className={`relative flex h-[128px] shrink-0 flex-col justify-between p-3 ${toneBg[venue.iconTone]}`}
-      >
-        <div className="flex items-start justify-between gap-2">
-          <span className="rounded-badge bg-amber-light px-2 py-[3px] text-hint font-medium text-amber-deep">
+      <div className="relative h-[160px] shrink-0 overflow-hidden bg-surface-secondary">
+        <VenuePhoto
+          imageId={venue.imageId}
+          alt={venue.name}
+          width={480}
+          height={320}
+          loading="eager"
+        />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-black/25 to-black/10" />
+        <div className="absolute left-3 right-3 top-3 flex items-start justify-between gap-2">
+          <span className="rounded-badge bg-white/90 px-2 py-[3px] text-hint font-medium text-amber-deep backdrop-blur-[2px]">
             {item.explore ? '换换口味' : '今日推荐'}
           </span>
           {!item.explore ? (
-            <span className="rounded-badge bg-teal-light px-2 py-[3px] text-hint font-medium text-teal-deep">
+            <span className="rounded-badge bg-white/90 px-2 py-[3px] text-hint font-medium text-teal-deep backdrop-blur-[2px]">
               匹配 {item.scorePercent ?? '—'}%
             </span>
           ) : null}
         </div>
-        <div className="flex items-end gap-2.5">
-          <div
-            className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-icon-block bg-surface-card/80 ${toneFg[venue.iconTone]}`}
-          >
-            <PlaceIcon name={venue.iconName} className={toneFg[venue.iconTone]} size={24} />
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-caption font-medium text-text-primary">
-              {venue.addressLine ?? (meta || venue.categoryLine)}
-            </p>
-            <p className="mt-0.5 text-hint text-text-secondary">
-              {venue.priceNote ?? venue.categoryLine}
-            </p>
-          </div>
+        <div className="absolute bottom-3 left-3 right-3">
+          <p className="truncate text-caption font-medium text-white">
+            {venue.addressLine ?? (meta || venue.categoryLine)}
+          </p>
+          <p className="mt-0.5 text-hint text-white/85">
+            {venue.priceNote ?? venue.categoryLine}
+          </p>
         </div>
       </div>
       <div className="flex flex-1 flex-col gap-2 overflow-y-auto p-3">

@@ -6,20 +6,8 @@ import { SWIPE_DECK } from '../mockData'
 import type { SwipeAction, SwipeCardModel, TasteTag } from '../types'
 import { Chip } from './Chip'
 import { MvpProgressBar } from './MvpProgressBar'
-import { PlaceIcon } from './PlaceIcon'
+import { VenuePhoto } from './VenuePhoto'
 import { trackMvp } from '../analytics'
-
-const iconToneBg: Record<SwipeCardModel['iconTone'], string> = {
-  natural: 'bg-icon-block-natural',
-  literate: 'bg-icon-block-literate',
-  bazaar: 'bg-icon-block-bazaar',
-}
-
-const iconToneFg: Record<SwipeCardModel['iconTone'], string> = {
-  natural: 'text-teal-deep',
-  literate: 'text-brand-purple-darkest',
-  bazaar: 'text-amber-deep',
-}
 
 function SwipeCardFrame({
   model,
@@ -35,11 +23,15 @@ function SwipeCardFrame({
       className={`flex flex-col overflow-hidden rounded-card-main border border-border-card bg-surface-card ${className}`}
       style={style}
     >
-      <div
-        className={`relative flex h-[110px] shrink-0 items-center justify-center ${iconToneBg[model.iconTone]}`}
-      >
-        <PlaceIcon name={model.iconName} size={40} className={iconToneFg[model.iconTone]} />
-        <span className="absolute left-2 top-2 rounded-badge bg-white px-2 py-[3px] text-hint font-medium text-teal-deep">
+      <div className="relative h-[160px] shrink-0 overflow-hidden bg-surface-secondary">
+        <VenuePhoto
+          imageId={model.imageId}
+          alt={model.title}
+          width={480}
+          height={320}
+          loading="eager"
+        />
+        <span className="absolute left-2 top-2 rounded-badge bg-white/90 px-2 py-[3px] text-hint font-medium text-teal-deep backdrop-blur-[2px]">
           口味测试
         </span>
       </div>

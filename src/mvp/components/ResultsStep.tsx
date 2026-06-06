@@ -7,22 +7,10 @@ import {
   matchBadgeExplore,
   matchBadgeHi,
 } from '../figmaUi'
-import { PlaceIcon } from './PlaceIcon'
+import { VenuePhoto } from './VenuePhoto'
 import { trackMvp } from '../analytics'
 import { resultsListSubtitle, venueMetaLine } from '../recoUi'
 import { RECO_DECK_MAX } from '../recommend'
-
-const toneBg = {
-  natural: 'bg-icon-block-natural',
-  literate: 'bg-icon-block-literate',
-  bazaar: 'bg-icon-block-bazaar',
-} as const
-
-const toneFg = {
-  natural: 'text-teal-deep',
-  literate: 'text-brand-purple-darkest',
-  bazaar: 'text-amber-deep',
-} as const
 
 type ResultFilter = 'all' | 'food' | 'stroll' | 'cafe'
 
@@ -109,13 +97,12 @@ export function ResultsStep({
                   onOpenVenue(row.venue.id)
                 }}
               >
-                <div
-                  className={`flex h-[54px] w-[54px] shrink-0 items-center justify-center rounded-icon-block ${toneBg[row.venue.iconTone]}`}
-                >
-                  <PlaceIcon
-                    name={row.venue.iconName}
-                    size={24}
-                    className={toneFg[row.venue.iconTone]}
+                <div className="h-[54px] w-[54px] shrink-0 overflow-hidden rounded-icon-block bg-surface-secondary">
+                  <VenuePhoto
+                    imageId={row.venue.imageId}
+                    alt={row.venue.name}
+                    width={108}
+                    height={108}
                   />
                 </div>
                 <div className="min-w-0 flex-1">

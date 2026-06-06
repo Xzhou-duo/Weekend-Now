@@ -25,20 +25,8 @@ import {
   PRAISE_OPTIONS,
 } from '../visitFeedbackUi'
 import { AiReasonBox } from './AiReasonBox'
-import { PlaceIcon } from './PlaceIcon'
+import { VenuePhoto } from './VenuePhoto'
 import { quizSubtitleLine } from '../recoUi'
-
-const toneBg = {
-  natural: 'bg-icon-block-natural',
-  literate: 'bg-icon-block-literate',
-  bazaar: 'bg-icon-block-bazaar',
-} as const
-
-const toneFg = {
-  natural: 'text-teal-deep',
-  literate: 'text-brand-purple-darkest',
-  bazaar: 'text-amber-deep',
-} as const
 
 const OUTCOME_STYLE: Record<
   VisitOutcome,
@@ -130,13 +118,12 @@ export function VisitFeedbackStep({
           这次去得怎么样？
         </button>
         <div className="mt-3 flex gap-2 rounded-[12px] bg-brand-purple-pale p-[8px_10px]">
-          <div
-            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-[9px] ${toneBg[item.venue.iconTone]}`}
-          >
-            <PlaceIcon
-              name={item.venue.iconName}
-              size={16}
-              className={toneFg[item.venue.iconTone]}
+          <div className="h-9 w-9 shrink-0 overflow-hidden rounded-[9px] bg-surface-secondary">
+            <VenuePhoto
+              imageId={item.venue.imageId}
+              alt={item.venue.name}
+              width={72}
+              height={72}
             />
           </div>
           <div className="min-w-0">
