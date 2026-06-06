@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react'
 import type { QuizAnswers, Recommendation } from '../types'
 import {
-  btnPurplePrimary,
   filterChipOff,
   filterChipOn,
   matchBadgeExplore,
@@ -36,13 +35,11 @@ function matchesFilter(item: Recommendation, filter: ResultFilter): boolean {
 export function ResultsStep({
   items,
   quiz,
-  onNext,
   onEnterRecoSwipe,
   onOpenVenue,
 }: {
   items: Recommendation[]
   quiz: Required<QuizAnswers>
-  onNext: () => void
   onEnterRecoSwipe: () => void
   onOpenVenue: (venueId: string) => void
   recoSource?: 'mimo' | 'rules'
@@ -140,13 +137,6 @@ export function ResultsStep({
             刷卡挑一挑（共 {Math.min(items.length, RECO_DECK_MAX)} 个）
           </button>
         ) : null}
-        <button
-          type="button"
-          onClick={() => onNext()}
-          className={btnPurplePrimary}
-        >
-          看完了，说说感受 →
-        </button>
       </div>
     </div>
   )

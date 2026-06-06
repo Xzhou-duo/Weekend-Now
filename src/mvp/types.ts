@@ -8,9 +8,6 @@ export type Step =
   | 'depart'
   /** PRD 场景四：出行后按店反馈 */
   | 'visit-feedback'
-  | 'feedback'
-  | 'survey'
-  | 'done'
 
 export type SwipeAction = 'dislike' | 'like' | 'bookmark'
 

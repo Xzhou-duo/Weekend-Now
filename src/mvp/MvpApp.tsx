@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type {
-  FeedbackValue,
   QuizAnswers,
   Recommendation,
   Step,
@@ -12,8 +11,6 @@ import type {
 } from './types'
 import { DEFAULT_QUIZ_SELECTION } from './types'
 import { DepartStep } from './components/DepartStep'
-import { FeedbackStep, type FeedbackStepMode } from './components/FeedbackStep'
-import { SurveyPromptStep } from './components/SurveyPromptStep'
 import { QuizStep } from './components/QuizStep'
 import { ResultsStep } from './components/ResultsStep'
 import { ResultsEmptyStep } from './components/ResultsEmptyStep'
@@ -35,7 +32,6 @@ import { trackMvp } from './analytics'
 import { isColdStartComplete } from './coldStart'
 import {
   applySwipeSessionToPersist,
-  bumpOverallFeedback,
   bumpSessionCount,
   canSkipColdStartSwipe,
   loadMvpPersist,
@@ -78,9 +74,6 @@ export function MvpApp() {
   const [visitFeedbackTarget, setVisitFeedbackTarget] =
     useState<Recommendation | null>(null)
   const [bypassColdStartGate, setBypassColdStartGate] = useState(false)
-  const [feedbackMode, setFeedbackMode] =
-    useState<FeedbackStepMode>('post-depart')
-  const [surveyNudgeVisible, setSurveyNudgeVisible] = useState(false)
   const [bookmarkDetailId, setBookmarkDetailId] = useState<string | null>(null)
 
   const resultsViewLogged = useRef(false)
@@ -88,8 +81,6 @@ export function MvpApp() {
   const submitAbortRef = useRef<AbortController | null>(null)
   const sessionBumpedRef = useRef(false)
   const postVisitFeedbackStepRef = useRef<Step>('results')
-  const surveyNudgeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const surveyNudgeScheduledRef = useRef(false)
 
   const canSkipSwipe = canSkipColdStartSwipe(persisted)
 
@@ -127,32 +118,15 @@ export function MvpApp() {
     return () => {
       mountedRef.current = false
       submitAbortRef.current?.abort()
-      if (surveyNudgeTimerRef.current !== null) {
-        window.clearTimeout(surveyNudgeTimerRef.current)
-      }
     }
   }, [])
 
   const closeResultDetail = useCallback(() => {
     setResultDetailId(null)
-    setSurveyNudgeVisible(false)
-    if (surveyNudgeTimerRef.current !== null) {
-      window.clearTimeout(surveyNudgeTimerRef.current)
-      surveyNudgeTimerRef.current = null
-    }
   }, [])
 
   const handleOpenResultVenue = useCallback((venueId: string) => {
     setResultDetailId(venueId)
-    if (surveyNudgeScheduledRef.current) return
-    surveyNudgeScheduledRef.current = true
-    if (surveyNudgeTimerRef.current !== null) {
-      window.clearTimeout(surveyNudgeTimerRef.current)
-    }
-    surveyNudgeTimerRef.current = window.setTimeout(() => {
-      surveyNudgeTimerRef.current = null
-      if (mountedRef.current) setSurveyNudgeVisible(true)
-    }, 3000)
   }, [])
 
   useEffect(() => {
@@ -205,13 +179,7 @@ export function MvpApp() {
     setRecoSwipeMountKey(0)
     setVisitFeedbackTarget(null)
     setBypassColdStartGate(false)
-    setSurveyNudgeVisible(false)
     setBookmarkDetailId(null)
-    surveyNudgeScheduledRef.current = false
-    if (surveyNudgeTimerRef.current !== null) {
-      window.clearTimeout(surveyNudgeTimerRef.current)
-      surveyNudgeTimerRef.current = null
-    }
   }
 
   const bookmarkVenueEnsure = useCallback(
@@ -483,7 +451,6 @@ export function MvpApp() {
                 }
                 recoSource="rules"
                 bookmarked={bookmarkedIds.has(bookmarkDetailId)}
-                surveyNudgeVisible={false}
                 onBack={() => setBookmarkDetailId(null)}
                 onToggleBookmark={() => onToggleBookmark(bookmarkDetailId)}
                 onDecideHere={() => {
@@ -605,8 +572,7 @@ export function MvpApp() {
                       praiseTags: payload.praiseTags,
                     })
                     setVisitFeedbackTarget(null)
-                    setFeedbackMode('post-visit')
-                    setStep('feedback')
+                    setStep(postVisitFeedbackStepRef.current)
                   }}
                 />
               )}
@@ -617,8 +583,6 @@ export function MvpApp() {
                 quiz={quiz}
                 recoSource={recoSource === 'mimo' ? 'mimo' : 'rules'}
                 bookmarked={bookmarkedIds.has(detailRecommendation.venue.id)}
-                surveyNudgeVisible={surveyNudgeVisible}
-                onDismissSurveyNudge={() => setSurveyNudgeVisible(false)}
                 onBack={closeResultDetail}
                 onToggleBookmark={() =>
                   onToggleBookmark(detailRecommendation.venue.id)
@@ -678,7 +642,6 @@ export function MvpApp() {
                   items={recommendations}
                   quiz={quiz}
                   recoSource={recoSource === 'mimo' ? 'mimo' : 'rules'}
-                  onNext={() => setStep('survey')}
                   onEnterRecoSwipe={() => {
                     setRecoSwipeMountKey((k) => k + 1)
                     setStep('reco-swipe')
@@ -712,49 +675,6 @@ export function MvpApp() {
                   restart()
                 }}
               />
-            )}
-
-            {step === 'feedback' && (
-              <FeedbackStep
-                mode={feedbackMode}
-                onSubmit={(value: FeedbackValue) => {
-                  setPersisted((prev) => {
-                    const bumped = bumpOverallFeedback(prev, value)
-                    const next = {
-                      ...bumped,
-                      completedFlows: bumped.completedFlows + 1,
-                    }
-                    saveMvpPersist(next)
-                    return next
-                  })
-                  trackMvp('mvp_flow_complete', {})
-                  setStep('survey')
-                }}
-              />
-            )}
-
-            {step === 'survey' && (
-              <SurveyPromptStep onFinish={() => setStep('done')} />
-            )}
-
-            {step === 'done' && (
-              <div className="flex flex-1 flex-col items-center justify-center gap-section py-8 text-center">
-                <div className="w-full rounded-[24px] bg-brand-purple-light p-8">
-                  <span className="text-title-section text-brand-purple-darkest">
-                    谢谢反馈
-                  </span>
-                  <p className="mt-3 text-caption leading-[1.6] text-text-secondary">
-                    口味与出行反馈已保存。可在「我的」查看画像，在「收藏」管理想去的地方。
-                  </p>
-                  <button
-                    type="button"
-                    className="mt-6 w-full rounded-block bg-brand-purple py-3 text-body font-medium text-white"
-                    onClick={restart}
-                  >
-                    再来一轮
-                  </button>
-                </div>
-              </div>
             )}
           </>
         )}
