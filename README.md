@@ -10,6 +10,16 @@ Weekend-Now 是一个 AI 驱动的周末本地生活推荐 Demo，用于验证�
 - 推荐理由是否能提升用户理解和决策效率
 - MVP 交互链路是否完整
 
+## demo链接
+
+https://weekend-now.vercel.app/
+
+## 原型设计
+
+
+<img width="1860" height="860" alt="image" src="https://github.com/user-attachments/assets/fe2d8523-7447-49ca-94cd-ac003fa62c2b" />
+
+
 ## 项目背景
 
 对于许多城市年轻人而言周末最大的难题并不是没有选择，而是选择太多。用户往往会经历：
