@@ -1,4 +1,4 @@
-# 拍了拍 · Web（MVP 脚手架）
+# 拍了拍 · Web（MVP demo）
 
 Vite + React + TypeScript + Tailwind CSS。视觉规范与令牌对齐仓库内 **`docs/design-system.md`**。
 
