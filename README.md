@@ -110,6 +110,8 @@ AI 需要从候选池中选择最匹配的地点。
 
 解释：为什么推荐这里。提升推荐的可解释性和信任感。
 
+<img width="920" height="691" alt="image" src="https://github.com/user-attachments/assets/5579b697-9261-49c8-86f7-bc602ece7c0f" />
+
 ## 产品边界
 
 当前版本明确不解决以下问题：不做真实 POI 搜索
