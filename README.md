@@ -1,8 +1,4 @@
-# 拍了拍 · Web（MVP demo）
-
-Vite + React + TypeScript + Tailwind CSS。视觉规范与令牌对齐仓库内 **`docs/design-system.md`**。
-
-## 项目定位
+# Weekend-Now（MVP demo）
 
 Weekend-Now 是一个 AI 驱动的周末本地生活推荐 Demo，用于验证「轻量问答 + AI 推荐解释」的产品体验。
 
@@ -14,107 +10,197 @@ Weekend-Now 是一个 AI 驱动的周末本地生活推荐 Demo，用于验证�
 - 推荐理由是否能提升用户理解和决策效率
 - MVP 交互链路是否完整
 
-## 开发与构建
+## 项目背景
 
-```bash
-npm install
-npm run dev
-npm run build
-```
+对于许多城市年轻人而言周末最大的难题并不是没有选择，而是选择太多。用户往往会经历：
+•打开地图 App
+•搜索附近地点
+•浏览大量评价
+•在多个候选之间反复犹豫最终产生决策疲劳。
+与此同时，用户真实需求往往并非：我想找一家咖啡馆。而是：我今天有点累，想出去走走。
 
-## 设计令牌去哪看
+这是一个典型的模糊需求场景。因此，我们尝试探索：AI 是否能够理解用户当前状态，并帮助用户完成决策。
 
-| 位置 | 说明 |
-|------|------|
-| `tailwind.config.js` | Tailwind `theme.extend`：**颜色 / 间距 / 圆角 / 字号层级 / 字体栈** |
-| `src/tokens/design-tokens.ts` | 同色值与间距的 TS 常量（图表、运行时逻辑用） |
-| `src/index.css` | `@tailwind` 与轻量 `@layer base` |
+## 目标用户
 
-### Tailwind 类名示例
+核心人群
+•25~35 岁城市青年​
+• 周末有出行需求​
+• 不愿花大量时间做攻略​
+• 存在选择困难倾向
 
-- 背景：`bg-surface-bg`、`bg-brand-purple`、`bg-surface-card`
-- 文字：`text-text-primary`、`text-text-secondary`、`text-title-page`、`text-body`
-- 间距：`px-page-h`、`p-card-inner`、`gap-element`、`gap-section`
-- 圆角：`rounded-card-main`、`rounded-block`、`rounded-badge`
+典型场景
+• 一个人想放松
+• 情侣周末约会
+• 朋友聚会
+• 想出门但不知道去哪
 
-产品范围见 **`docs/MVP-validation.md`**。
+## 用户痛点
 
-## MVP 已实现功能
+- 痛点1：选择过多。用户知道附近有很多地方。但不知道：今天更适合去哪一个。
+- 痛点2：需求模糊。用户往往无法准确表达：想吃什么，想玩什么。但能够表达：想放松，想约会，想换个环境
+- 痛点3：决策成本高。传统地图产品提供大量信息。但用户仍需要自行比较和筛选。
 
-`src/mvp/` 主流程（详见 **`docs/MVP-validation.md`**）：
+## 产品目标
 
-1. **冷启动** `SwipeStep`：20 张口味卡，≥8 张解锁推荐；白底引导区 + 紫色进度条；滑卡倾斜 + 渐变反馈；底部按钮带标签  
-2. **今日三题** `QuizStep`：默认预填，可直接提交  
-3. **推荐决策**：默认 **RecoSwipe** 刷卡（可切列表）；8 条池 + 实时重排；AI 理由 2 行展示  
-4. **详情** `VenueDetailSheet`：地址 / 价格 / 营业时间  
-5. **决定去处** → `DepartStep` 出发祝福 → 写入 `pendingFeedback` → 回访时 Quiz 页横幅触发出行反馈  
-6. **出行反馈** `VisitFeedbackStep`：按店回收信号，更新口味画像（无整体感受页、无外链问卷）  
-7. 底部 Tab：**发现 / 收藏 / 我的口味** · 候选 POI 22 条（上海 mock）
+验证以下核心假设：
 
-`npm run dev` + 本地 API 时会先请求 `POST /api/recommend`（MiMo），失败或未配置密钥则自动使用 `src/mvp/recommend.ts` 规则兜底。
+• 用户愿意通过轻量问答表达当前状态。
+• AI 推荐理由能够提升用户信任感。
+• 相比纯列表展示，
 
-### 本地 MiMo API 示例
+带解释的推荐结果更容易帮助用户做出决策。
 
-1. 复制 `cp .env.example .env`，填入 `MIMO_API_KEY`（不要将真实 key 提交仓库）。
-2. **一条命令同时起 Vite + API**（推荐）：
+## 产品方案
 
-   ```bash
-   npm run dev:all
-   ```
+• Step1：冷启动建档
+用户通过滑卡完成偏好采集：环境偏好、消费偏好、活动偏好、社交偏好
+形成基础口味画像。
 
-   `dev:all` **不会**在 API 退出时自动关掉 Vite（便于你先看到前端报错再排查）。PowerShell 也可用环境变量覆盖密钥：
+• Step2：今日情境输入
+用户回答三道问题：几个人、当前状态、愿意接受的距离
+用于表达即时需求。
 
-   ```powershell
-   $env:MIMO_API_KEY="你的key"; npm run dev:all
-   ```
+• Step3：AI 推荐
+系统综合：长期口味偏好、当前情境、候选 POI 信息
+生成推荐结果。
 
-3. 实现文件：`server/recommend-api.mjs`，默认监听 `.env` 里的 `MIMO_API_SERVER_PORT`（常用 `8788`），模型 `mimo-v2.5-pro`；请求头同时带 `Authorization: Bearer` 与 `api-key`。`npm run dev:api` 使用 `node --env-file=.env`。Vite **默认固定 `http://localhost:5173`**（`strictPort`），若端口被占用会直接报错——请关掉占用进程或改 `.env` 里的 `VITE_DEV_PORT`。`/api/recommend` 代理到上述 API 端口（见 `vite.config.ts`）。
+• Step4：推荐解释
+除推荐地点外，系统同时生成推荐理由。
+例如：结合你今天想放松的状态，这里相比商场更加安静，也更适合一个人散步。
 
-仅跑前端、不启 API 时：**仍会完整可用**，推荐语走本地规则。
+• Step5：出行反馈
+用户决定去处后进入反馈流程。反馈结果用于更新口味画像。
 
-构建产物 `npm run build` 为静态前端；**推荐 API** 需单独托管（见下文 Railway）。
+## 核心功能
 
-开发环境会在控制台输出 `mvp_*` 埋点事件；亦派发 `window` 事件 `mvp-analytics`。
+冷启动偏好建档
+三题情境问答
+AI 推荐生成
+推荐理由生成
+推荐刷卡浏览
+收藏夹
+口味画像
+出行反馈闭环
 
----
+## AI能力设计
 
-## 部署：Vercel（前端）+ Railway（API）
+AI 在哪里发挥作用--AI 不负责寻找地点。AI 负责：
 
-### 1. Railway — `POST /api/recommend`
+1. 理解用户情境
 
-1. [Railway](https://railway.app) 新建项目 → **Deploy from GitHub**（或 CLI），选中本仓库。
-2. **Root Directory** 设为 **`web`**（重要）。
-3. **Variables**（示例）：
+例如：一个人,想放松,不想跑太远
 
-   | 变量 | 说明 |
-   |------|------|
-   | `MIMO_API_KEY` | 必填 |
-   | `ALLOWED_ORIGINS` | **必填（生产）**：Vercel 站点完整 URL，逗号分隔多个，如 `https://paipa.vercel.app` |
-   | `MIMO_BASE_URL` | 与小米控制台一致（默认见 `.env.example`） |
-   | `MIMO_MODEL` | 可选 |
+2. 从候选集合中筛选地点
 
-   **勿**在 Railway 配置 `PORT`，由平台注入。
+当前版本使用固定 POI 候选池。
 
-4. **Settings → Networking → Generate Domain**，记下公网地址，例如 `https://paipa-api-production-xxxx.up.railway.app`。
-5. 自检：浏览器打开 `https://…/health` 应返回 JSON `{ ok: true }`。
+AI 需要从候选池中选择最匹配的地点。
 
-### 2. Vercel — 静态前端
+3. 生成推荐理由
 
-1. [Vercel](https://vercel.com) Import 仓库，**Root Directory** 选 **`web`**。
-2. Build：**默认** `npm run build`，Output **`dist`**（Vite 预设）。
-3. **Environment Variables（Production）**：
+解释：为什么推荐这里。提升推荐的可解释性和信任感。
 
-   - `VITE_API_BASE_URL` = Railway 公网根 URL，**无尾斜杠**，例如 `https://paipa-api-production-xxxx.up.railway.app`
+## 产品边界
 
-4. Deploy。此后前端会向 `${VITE_API_BASE_URL}/api/recommend` 发请求；本地开发不设该变量时仍走 Vite 代理的 `/api/recommend`。
+当前版本明确不解决以下问题：不做真实 POI 搜索
 
-### 3. 顺序与 CORS
+未接入：高德地图 API/Google Places API
 
-先拿到 **Railway URL**，再填 **Vercel 的 `VITE_API_BASE_URL`** 并 redeploy。  
-`ALLOWED_ORIGINS` 必须包含最终用户访问的 **Vercel 域名**（含 `https://`），否则会触发浏览器的跨域拦截。
+使用固定 POI 池进行验证。
 
-仓库内 **`web/vercel.json`** 仅含 SPA fallback rewrite；**`web/railway.toml`** 指定 `npm run start`（即 `node ./server/recommend-api.mjs`）。
+不做导航能力
 
----
+不提供：路线规划、打车、公交导航
 
-以下为 Vite 模板自带的 TypeScript ESLint 说明（可选阅读）。
+不做交易闭环
+
+不提供：购票、预订、团购、不做长期精准推荐
+
+当前重点验证：当下情境推荐，而非长期推荐系统。
+
+## 产品闭环
+
+用户进入产品
+↓
+偏好建档
+↓
+情境输入
+↓
+AI 推荐
+↓
+决定去处
+↓
+出行反馈
+↓
+画像更新
+↓
+下一次推荐优化
+
+## 评测方案（规划中）
+
+当前版本尚未完成正式评测。计划采用情境评测方式验证推荐质量。
+
+评测维度
+是否遵守候选池约束
+是否返回合法结果
+是否符合用户场景
+推荐理由是否合理
+推荐理由是否具有解释性
+评测数据
+
+计划构建：10~30 条典型周末出行情境。
+用于人工评测。
+
+## Bad Case（待沉淀）
+
+当前版本尚未形成系统化 Bad Case 库。后续计划记录：
+
+推荐与用户场景明显不匹配
+推荐理由过于泛化
+推荐理由与地点特征不符
+重复推荐
+输出格式异常
+
+用于后续 Prompt 优化。
+
+## 当前限制
+
+POI 为固定 Mock 数据
+未接入真实地图服务
+无真实用户数据
+无线上 A/B 测试结果
+推荐效果尚未经过大规模验证
+
+## 后续规划
+
+Phase 1：完成情境评测集建设。沉淀 Bad Case。
+
+Phase 2：接入真实地图 API。实现动态地点获取。
+
+Phase 3：增加用户行为反馈：喜欢/不喜欢/换一批
+用于优化推荐策略。
+
+Phase 4：探索真实推荐效果验证。建立线上数据闭环。
+
+## 技术栈
+
+### Frontend
+
+React
+TypeScript
+Vite
+Tailwind CSS
+
+### Backend
+
+Node.js
+
+### LLM
+
+MiMo V2.5 Pro
+
+### Deployment
+
+Vercel
+Railway
