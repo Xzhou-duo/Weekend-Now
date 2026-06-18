@@ -16,9 +16,8 @@ https://weekend-now.vercel.app/
 
 ## 原型设计
 
-
 <img width="1860" height="860" alt="image" src="https://github.com/user-attachments/assets/fe2d8523-7447-49ca-94cd-ac003fa62c2b" />
-
+<img width="1865" height="875" alt="image" src="https://github.com/user-attachments/assets/89b73464-d154-4492-a5be-8f9a8e385a69" />
 
 ## 项目背景
 
