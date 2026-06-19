@@ -367,8 +367,8 @@ export function MvpApp() {
           })
           if (!mountedRef.current) {
             /* 卸载 */
-          } else if (fromApi?.length === 3) {
-            const deck = augmentMimoToRecoDeck(fromApi, swipeRecords, quiz, opts)
+          } else if (fromApi?.length === 8) {
+            const deck = augmentMimoToRecoDeck(fromApi)
             setRecommendations(deck)
             setRecoSource('mimo')
             trackMvp('mvp_recommend_source', {

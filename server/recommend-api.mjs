@@ -29,13 +29,15 @@ const MIMO_BASE_RAW = envTrim(
   'https://token-plan-cn.xiaomimimo.com/v1',
 ).replace(/\/$/, '')
 
+const RECOMMENDATION_COUNT = 8
+
 const SYSTEM = `你是「拍了拍」周末本地出行的推荐助手。你必须且只能输出一个合法 JSON 对象（不要 Markdown、不要多余解释），格式严格为：
 {"items":[{"id":"候选里的venue id","reason":"一两句中文推荐语（50～120字）"},{"id":"...","reason":"..."},{"id":"...","reason":"..."}]}
 规则：
-1）items 必须恰好 3 个；每个 id 必须原样选自用户给出的候选列表。
+1）items 必须恰好 8 个且 id 不重复；每个 id 必须原样选自用户给出的候选列表。
 2）reason 要结合用户滑卡体现的偏好向量 + 今日三题的情境来写，通俗易懂。
 3）不得编造候选列表里没有的店名或 id。
-4）若无法在候选中挑出 3 个，也请输出你能给出的最贴切 3 个 id（仍须来自候选），不要道歉废话。`
+4）必须从候选中按匹配度选出最贴切的 8 个 id（仍须来自候选），不要道歉废话。`
 
 /** 从 start 起截取 balanced `{...}`，字符串内的括号不计入深度 */
 function sliceBalancedObject(s, start) {
@@ -116,9 +118,9 @@ function sanitizeItems(parsed, venuesById) {
     const reason = reasonRaw.trim().slice(0, 400)
     if (!reason) continue
     out.push({ id, reason })
-    if (out.length >= 3) break
+    if (out.length >= RECOMMENDATION_COUNT) break
   }
-  return out.length === 3 ? out : null
+  return out.length === RECOMMENDATION_COUNT ? out : null
 }
 
 function buildUserPayload(body) {
@@ -131,8 +133,8 @@ function buildUserPayload(body) {
   ) {
     return { error: 'INVALID_BODY', status: 400 }
   }
-  if (venues.length < 3) {
-    return { error: 'NEED_AT_LEAST_3_VENUES', status: 400 }
+  if (venues.length < RECOMMENDATION_COUNT) {
+    return { error: 'NEED_AT_LEAST_8_VENUES', status: 400 }
   }
   const user = JSON.stringify(
     {

@@ -9,6 +9,8 @@ import type {
 type ApiOk = { ok: true; items: { id: string; reason: string }[] }
 type ApiFail = { ok: false; error?: string; message?: string }
 
+const RECOMMENDATION_COUNT = 8
+
 function normalizeId(id: unknown): string {
   if (id === undefined || id === null) return ''
   return String(id).trim()
@@ -34,14 +36,14 @@ function mergeToRecommendations(
     if (!v || !r) continue
     out.push({ venue: v, reason: r })
     seen.add(id)
-    if (out.length >= 3) break
+    if (out.length >= RECOMMENDATION_COUNT) break
   }
-  return out.length === 3 ? out : null
+  return out.length === RECOMMENDATION_COUNT ? out : null
 }
 
 /**
  * POST /api/recommend（开发时由 Vite 代理到本地 Node 示例服务）
- * 成功且恰好 3 条则返回；否则返回 null，由前端调用 recommendTop3 兜底。
+ * 成功且恰好 8 条则返回；否则返回 null，由前端调用本地规则兜底。
  */
 function recommendUrl(): string {
   const base = (import.meta.env.VITE_API_BASE_URL ?? '').replace(/\/$/, '')

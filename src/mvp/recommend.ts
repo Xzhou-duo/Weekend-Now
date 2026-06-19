@@ -350,25 +350,14 @@ export function recommendTop3(
   ).slice(0, 3)
 }
 
-/** MiMo 返回 3 条后补足 8 条推荐 deck */
+/** 将 MiMo 返回的完整推荐结果补充为可展示的 deck */
 export function augmentMimoToRecoDeck(
   mimoTop: Recommendation[],
-  swipeRecords: { tags: TasteTag[]; action: SwipeAction }[],
-  quiz: Required<QuizAnswers>,
-  options?: RecommendOptions,
 ): Recommendation[] {
-  const full = recommendDeck8(swipeRecords, quiz, options)
-  const seen = new Set(mimoTop.map((r) => r.venue.id))
-  const head = mimoTop.map((r, i) => ({
+  return mimoTop.slice(0, RECO_DECK_MAX).map((r, i) => ({
     ...r,
     explore: false,
     scorePercent: r.scorePercent ?? 90 - i * 4,
-  }))
-  const tail = full.filter((r) => !seen.has(r.venue.id))
-  const merged = [...head, ...tail].slice(0, RECO_DECK_MAX)
-  return merged.map((r, i) => ({
-    ...r,
-    scorePercent: r.scorePercent ?? Math.max(65, 88 - i * 3),
   }))
 }
 
