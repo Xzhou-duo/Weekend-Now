@@ -34,7 +34,7 @@ function mergeToRecommendations(
           ? String(row.reason).trim()
           : ''
     if (!v || !r) continue
-    out.push({ venue: v, reason: r })
+    out.push({ venue: v, reason: r, reasonSource: 'mimo' })
     seen.add(id)
     if (out.length >= RECOMMENDATION_COUNT) break
   }

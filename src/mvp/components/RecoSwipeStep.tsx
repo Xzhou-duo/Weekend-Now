@@ -61,7 +61,9 @@ function RecoCard({
       <div className="flex flex-1 flex-col gap-2 overflow-y-auto p-3">
         <h3 className="text-title-card text-text-primary">{venue.name}</h3>
         <p className="text-caption text-text-tertiary">{venue.categoryLine}</p>
-        <AiReasonBox>{item.reason}</AiReasonBox>
+        <AiReasonBox generatedByMimo={item.reasonSource === 'mimo'}>
+          {item.reason}
+        </AiReasonBox>
       </div>
     </div>
   )

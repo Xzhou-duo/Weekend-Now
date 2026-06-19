@@ -83,7 +83,9 @@ export function VenueDetailSheet({
           <IconClock size={10} aria-hidden />
           营业中 · {venue.openHours ?? '11:00–22:00'}
         </div>
-        <AiReasonBox>{item.reason}</AiReasonBox>
+        <AiReasonBox generatedByMimo={item.reasonSource === 'mimo'}>
+          {item.reason}
+        </AiReasonBox>
       </div>
 
       <div className="flex shrink-0 gap-2 px-page-h pb-[14px]">

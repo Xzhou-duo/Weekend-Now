@@ -422,7 +422,7 @@ export function MvpApp() {
     <div className="mx-auto flex min-h-svh w-full max-w-[430px] flex-col overflow-x-hidden bg-surface-bg">
       <header className="flex shrink-0 items-center justify-between px-page-h pb-2 pt-4">
         <span className="text-caption font-medium text-brand-purple-deep">
-          拍了拍 · PRD
+          Weekend-now · demo
         </span>
         {headerRestartVisible ? (
           <button

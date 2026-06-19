@@ -393,7 +393,7 @@ export function rerankRecommendationListByRecoSwipe(
       score: row.score,
       rec: {
         ...row.rec,
-        reason: row.rec.explore
+        reason: row.rec.reasonSource === 'mimo' || row.rec.explore
           ? row.rec.reason
           : buildReason(row.rec.venue, quiz, topTags, hadSessionSwipe),
       },

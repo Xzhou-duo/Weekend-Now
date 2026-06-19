@@ -84,6 +84,7 @@ export interface Venue {
 export interface Recommendation {
   venue: Venue
   reason: string
+  reasonSource?: 'mimo'
   /** PRD：探索型推荐位 */
   explore?: boolean
   /** 规则路径下的相对匹配度 0–100 */

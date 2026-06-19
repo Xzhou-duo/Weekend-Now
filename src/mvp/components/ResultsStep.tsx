@@ -109,6 +109,11 @@ export function ResultsStep({
                   <p className="mt-[3px] text-[11px] leading-[1.5] text-text-secondary line-clamp-2">
                     {row.explore ? '为你加入一个新鲜探索' : row.reason}
                   </p>
+                  {row.reasonSource === 'mimo' ? (
+                    <p className="mt-0.5 text-hint text-brand-purple-deep/70">
+                      本推荐语由 mimo-v2.5-pro 生成
+                    </p>
+                  ) : null}
                   <div className="text-hint text-text-tertiary">
                     {venueMetaLine(row.venue, quiz)}
                   </div>
